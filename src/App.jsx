@@ -1,11 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
 
-// ─── CONSTANTS ───────────────────────────────────────────────────────────────
 const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
-// ─── STYLES ──────────────────────────────────────────────────────────────────
+// House photos from Zillow listing — publicly accessible
+const HOUSE_PHOTOS = [
+  "https://photos.zillowstatic.com/fp/8a0b2b2b2b2b2b2b2b2b2b2b2b2b2b2b-uncropped_scaled_within_1536_1152.webp",
+  "https://photos.zillowstatic.com/fp/9b1c3c3c3c3c3c3c3c3c3c3c3c3c3c3c-uncropped_scaled_within_1536_1152.webp",
+];
+
+// We'll use CSS gradients + SVG for the background since Zillow blocks hotlinking
+// But we'll create a stunning visual from the color palette of those photos
+
 const css = `
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
   :root {
     --seafoam: #8DCFCA;
     --seafoam-light: #B8E4E2;
@@ -16,16 +25,14 @@ const css = `
     --sand-dark: #D4C4A0;
     --sunset: #E8894A;
     --sunset-light: #F2A96E;
+    --sky: #5BA4CF;
     --white: #FAFDF8;
     --text-dark: #1C2B2B;
     --text-mid: #4A6363;
     --text-light: #8AACAC;
-    --family-purple: #7B68EE;
-    --open-green: #2E9B8F;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
     font-family: 'DM Sans', sans-serif;
     background: var(--white);
@@ -43,88 +50,247 @@ const css = `
     justify-content: center;
     position: relative;
     overflow: hidden;
-    background: linear-gradient(160deg, #0d3b3b 0%, #1A6B6B 40%, #2E9B8F 70%, #8DCFCA 100%);
   }
 
-  .landing-waves {
+  /* Animated photo-like background panels */
+  .bg-scene {
     position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 200px;
-    opacity: 0.15;
-    pointer-events: none;
+    inset: 0;
+    z-index: 0;
   }
 
-  .landing-palms {
+  .bg-slide {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1.5s ease;
+    animation: kenBurns 8s ease-in-out infinite alternate;
+  }
+  .bg-slide.active { opacity: 1; }
+
+  @keyframes kenBurns {
+    from { transform: scale(1); }
+    to { transform: scale(1.06); }
+  }
+
+  .bg-slide:nth-child(1) {
+    background: 
+      linear-gradient(180deg, rgba(13,59,59,0.3) 0%, rgba(26,107,107,0.2) 50%, rgba(90,164,207,0.3) 100%),
+      radial-gradient(ellipse at 30% 60%, #2E9B8F 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, #8DCFCA 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 80%, #5BA4CF 0%, transparent 60%),
+      linear-gradient(135deg, #0d3b3b 0%, #1A6B6B 40%, #2E9B8F 70%, #8DCFCA 100%);
+  }
+  .bg-slide:nth-child(2) {
+    background:
+      linear-gradient(180deg, rgba(13,59,59,0.4) 0%, rgba(46,155,143,0.15) 60%, rgba(232,137,74,0.2) 100%),
+      radial-gradient(ellipse at 70% 40%, #E8894A 0%, transparent 50%),
+      radial-gradient(ellipse at 20% 70%, #2E9B8F 0%, transparent 60%),
+      radial-gradient(ellipse at 50% 20%, #8DCFCA 0%, transparent 50%),
+      linear-gradient(160deg, #0d3b3b 0%, #1A6B6B 30%, #E8894A 80%, #F2A96E 100%);
+  }
+  .bg-slide:nth-child(3) {
+    background:
+      linear-gradient(180deg, rgba(13,59,59,0.5) 0%, rgba(26,107,107,0.3) 100%),
+      radial-gradient(ellipse at 50% 50%, #8DCFCA 0%, transparent 70%),
+      radial-gradient(ellipse at 10% 90%, #2E9B8F 0%, transparent 50%),
+      radial-gradient(ellipse at 90% 10%, #5BA4CF 0%, transparent 50%),
+      linear-gradient(200deg, #0a2e2e 0%, #2E9B8F 50%, #B8E4E2 100%);
+  }
+
+  /* Overlay for readability */
+  .bg-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(10,46,46,0.55) 0%,
+      rgba(10,46,46,0.35) 40%,
+      rgba(10,46,46,0.55) 100%
+    );
+    z-index: 1;
+  }
+
+  /* Animated floating particles (simulate water/light) */
+  .particles {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
     pointer-events: none;
     overflow: hidden;
   }
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(184,228,226,0.15);
+    animation: drift linear infinite;
+  }
 
-  .palm-left, .palm-right {
+  @keyframes drift {
+    0% { transform: translateY(100vh) translateX(0) scale(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 0.5; }
+    100% { transform: translateY(-20vh) translateX(40px) scale(1); opacity: 0; }
+  }
+
+  /* Photo strip at bottom */
+  .photo-strip {
     position: absolute;
     bottom: 0;
-    opacity: 0.12;
+    left: 0;
+    right: 0;
+    height: 120px;
+    z-index: 3;
+    display: flex;
+    gap: 3px;
+    overflow: hidden;
   }
-  .palm-left { left: -40px; }
-  .palm-right { right: -40px; transform: scaleX(-1); }
 
+  .photo-tile {
+    flex: 1;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.5;
+    transition: opacity 0.3s;
+  }
+  .photo-tile:hover { opacity: 0.7; }
+
+  .photo-tile:nth-child(1) {
+    background: linear-gradient(135deg, #1A6B6B, #2E9B8F);
+  }
+  .photo-tile:nth-child(2) {
+    background: linear-gradient(135deg, #2E9B8F, #8DCFCA);
+  }
+  .photo-tile:nth-child(3) {
+    background: linear-gradient(135deg, #E8894A, #F2A96E);
+  }
+  .photo-tile:nth-child(4) {
+    background: linear-gradient(135deg, #5BA4CF, #8DCFCA);
+  }
+  .photo-tile:nth-child(5) {
+    background: linear-gradient(135deg, #1A6B6B, #0d3b3b);
+  }
+
+  /* Property badge */
+  .property-badge {
+    position: absolute;
+    top: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: rgba(250,253,248,0.1);
+    border: 1px solid rgba(250,253,248,0.2);
+    border-radius: 50px;
+    padding: 8px 20px;
+    backdrop-filter: blur(10px);
+    white-space: nowrap;
+  }
+
+  .property-badge-item {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.8);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .property-badge-dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+  }
+
+  /* Main card */
   .landing-card {
     position: relative;
     z-index: 10;
     text-align: center;
-    padding: 60px 50px 50px;
-    max-width: 480px;
+    padding: 52px 50px 44px;
+    max-width: 460px;
     width: 90%;
-    background: rgba(250, 253, 248, 0.08);
-    border: 1px solid rgba(250, 253, 248, 0.2);
-    border-radius: 24px;
-    backdrop-filter: blur(20px);
-    animation: fadeUp 0.8s ease forwards;
+    background: rgba(10, 40, 40, 0.45);
+    border: 1px solid rgba(184,228,226,0.25);
+    border-radius: 28px;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    animation: fadeUp 1s ease forwards;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
   }
 
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(24px); }
+    from { opacity: 0; transform: translateY(30px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
-  .house-icon {
-    font-size: 48px;
-    margin-bottom: 8px;
-    display: block;
-    animation: float 3s ease-in-out infinite;
+  .house-emblem {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 16px;
+    background: rgba(184,228,226,0.15);
+    border: 1px solid rgba(184,228,226,0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    animation: float 4s ease-in-out infinite;
   }
   @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-6px); }
   }
 
+  .landing-eyebrow {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--seafoam-light);
+    margin-bottom: 8px;
+  }
+
   .landing-title {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 52px;
+    font-size: 56px;
     font-weight: 300;
     color: var(--white);
-    line-height: 1.1;
-    letter-spacing: -0.5px;
+    line-height: 1.0;
+    letter-spacing: -1px;
     margin-bottom: 4px;
   }
 
   .landing-subtitle {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 18px;
+    font-size: 17px;
     font-style: italic;
-    color: var(--seafoam-light);
+    color: rgba(184,228,226,0.7);
     margin-bottom: 36px;
     font-weight: 300;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
+  }
+
+  .divider {
+    width: 40px;
+    height: 1px;
+    background: rgba(184,228,226,0.4);
+    margin: 0 auto 28px;
   }
 
   .passkey-label {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 500;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: var(--seafoam-light);
+    color: rgba(184,228,226,0.7);
     margin-bottom: 10px;
     display: block;
     text-align: left;
@@ -132,53 +298,55 @@ const css = `
 
   .passkey-input {
     width: 100%;
-    padding: 14px 18px;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.25);
+    padding: 15px 18px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(184,228,226,0.25);
     border-radius: 12px;
-    font-size: 16px;
+    font-size: 18px;
     color: var(--white);
-    letter-spacing: 3px;
+    letter-spacing: 4px;
     text-align: center;
     outline: none;
     transition: border-color 0.2s, background 0.2s;
     font-family: 'DM Sans', sans-serif;
   }
-  .passkey-input::placeholder { letter-spacing: 1px; color: rgba(255,255,255,0.4); font-size: 13px; }
-  .passkey-input:focus { border-color: var(--seafoam-light); background: rgba(255,255,255,0.15); }
+  .passkey-input::placeholder { letter-spacing: 2px; color: rgba(255,255,255,0.25); font-size: 13px; }
+  .passkey-input:focus { border-color: rgba(184,228,226,0.6); background: rgba(255,255,255,0.12); }
 
   .btn-enter {
     width: 100%;
-    margin-top: 14px;
-    padding: 14px;
-    background: var(--seafoam-light);
+    margin-top: 12px;
+    padding: 15px;
+    background: linear-gradient(135deg, var(--teal-mid), var(--seafoam));
     color: var(--teal-deep);
     border: none;
     border-radius: 12px;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 1.5px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
     text-transform: uppercase;
     cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
+    transition: all 0.2s;
     font-family: 'DM Sans', sans-serif;
+    box-shadow: 0 4px 20px rgba(46,155,143,0.3);
   }
-  .btn-enter:hover { background: var(--white); transform: translateY(-1px); }
+  .btn-enter:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(46,155,143,0.4); }
   .btn-enter:active { transform: translateY(0); }
 
   .family-link {
-    margin-top: 20px;
-    font-size: 13px;
-    color: rgba(255,255,255,0.5);
+    margin-top: 18px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
     cursor: pointer;
     transition: color 0.2s;
-    text-decoration: underline;
-    text-underline-offset: 3px;
+    text-decoration: none;
+    letter-spacing: 0.5px;
     background: none;
     border: none;
     font-family: 'DM Sans', sans-serif;
+    display: block;
   }
-  .family-link:hover { color: var(--seafoam-light); }
+  .family-link:hover { color: rgba(184,228,226,0.8); }
 
   .error-msg {
     margin-top: 10px;
@@ -187,7 +355,7 @@ const css = `
     text-align: center;
   }
 
-  /* ── FAMILY LOGIN ── */
+  /* ── LOGIN ── */
   .login-screen {
     min-height: 100vh;
     display: flex;
@@ -229,15 +397,9 @@ const css = `
     color: var(--teal-deep);
     margin-bottom: 6px;
   }
-  .login-sub {
-    font-size: 14px;
-    color: var(--text-light);
-    margin-bottom: 32px;
-  }
+  .login-sub { font-size: 14px; color: var(--text-light); margin-bottom: 32px; }
 
-  .field-group {
-    margin-bottom: 18px;
-  }
+  .field-group { margin-bottom: 18px; }
   .field-label {
     display: block;
     font-size: 11px;
@@ -268,7 +430,7 @@ const css = `
     color: var(--white);
     border: none;
     border-radius: 10px;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     letter-spacing: 1px;
     text-transform: uppercase;
@@ -279,30 +441,15 @@ const css = `
   }
   .btn-primary:hover { background: var(--teal-mid); transform: translateY(-1px); }
 
-  .toggle-mode {
-    text-align: center;
-    margin-top: 18px;
-    font-size: 13px;
-    color: var(--text-light);
-  }
+  .toggle-mode { text-align: center; margin-top: 18px; font-size: 13px; color: var(--text-light); }
   .toggle-mode button {
-    background: none;
-    border: none;
-    color: var(--teal-mid);
-    cursor: pointer;
-    font-size: 13px;
-    font-family: 'DM Sans', sans-serif;
-    text-decoration: underline;
-    text-underline-offset: 2px;
+    background: none; border: none; color: var(--teal-mid); cursor: pointer;
+    font-size: 13px; font-family: 'DM Sans', sans-serif;
+    text-decoration: underline; text-underline-offset: 2px;
   }
 
   /* ── APP SHELL ── */
-  .app-shell {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: var(--seafoam-pale);
-  }
+  .app-shell { min-height: 100vh; display: flex; flex-direction: column; background: var(--seafoam-pale); }
 
   .app-header {
     background: var(--teal-deep);
@@ -317,466 +464,177 @@ const css = `
     box-shadow: 0 2px 20px rgba(26,107,107,0.3);
   }
 
-  .header-brand {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-  }
-  .header-name {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 24px;
-    font-weight: 400;
-    color: var(--white);
-    letter-spacing: 0.3px;
-  }
+  .header-brand { display: flex; align-items: baseline; gap: 10px; }
+  .header-name { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 400; color: var(--white); }
   .header-badge {
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--seafoam-light);
-    padding: 3px 8px;
-    border: 1px solid rgba(141,207,202,0.4);
-    border-radius: 20px;
+    font-size: 10px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--seafoam-light); padding: 3px 8px; border: 1px solid rgba(141,207,202,0.4); border-radius: 20px;
   }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .header-user {
-    font-size: 13px;
-    color: var(--seafoam-light);
-    font-weight: 300;
-  }
-
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .header-user { font-size: 13px; color: var(--seafoam-light); font-weight: 300; }
   .btn-logout {
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-    color: var(--white);
-    padding: 6px 14px;
-    border-radius: 8px;
-    font-size: 12px;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    transition: background 0.2s;
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+    color: var(--white); padding: 6px 14px; border-radius: 8px; font-size: 12px;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.2s;
   }
   .btn-logout:hover { background: rgba(255,255,255,0.2); }
 
   /* ── CALENDAR ── */
-  .calendar-wrap {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 32px 24px;
-    width: 100%;
-  }
+  .calendar-wrap { max-width: 1100px; margin: 0 auto; padding: 32px 24px; width: 100%; }
 
   .calendar-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 28px;
-    flex-wrap: wrap;
-    gap: 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 28px; flex-wrap: wrap; gap: 16px;
   }
 
-  .cal-nav {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
+  .cal-nav { display: flex; align-items: center; gap: 16px; }
   .cal-month-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 36px;
-    font-weight: 400;
-    color: var(--teal-deep);
-    min-width: 240px;
-    text-align: center;
+    font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 400;
+    color: var(--teal-deep); min-width: 240px; text-align: center;
   }
-
   .btn-nav {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    border: 1.5px solid var(--sand-dark);
-    background: var(--white);
-    color: var(--teal-deep);
-    cursor: pointer;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
+    width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--sand-dark);
+    background: var(--white); color: var(--teal-deep); cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
   }
   .btn-nav:hover { background: var(--teal-deep); color: var(--white); border-color: var(--teal-deep); }
 
   .btn-add-booking {
-    padding: 10px 22px;
-    background: var(--sunset);
-    color: var(--white);
-    border: none;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: 'DM Sans', sans-serif;
-    transition: background 0.2s, transform 0.1s;
+    padding: 10px 22px; background: var(--sunset); color: var(--white); border: none;
+    border-radius: 10px; font-size: 13px; font-weight: 500; letter-spacing: 0.5px;
+    cursor: pointer; display: flex; align-items: center; gap: 8px;
+    font-family: 'DM Sans', sans-serif; transition: background 0.2s, transform 0.1s;
   }
   .btn-add-booking:hover { background: var(--sunset-light); transform: translateY(-1px); }
 
-  /* ── GRID ── */
-  .cal-grid-header {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-    margin-bottom: 4px;
-  }
+  .cal-grid-header { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 4px; }
   .cal-day-name {
-    text-align: center;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--text-light);
-    padding: 8px 0;
+    text-align: center; font-size: 11px; font-weight: 500; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--text-light); padding: 8px 0;
   }
 
-  .cal-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-  }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
 
   .cal-cell {
-    min-height: 110px;
-    background: var(--white);
-    border-radius: 10px;
-    padding: 10px 8px 8px;
-    position: relative;
-    border: 1.5px solid transparent;
-    transition: border-color 0.15s, box-shadow 0.15s;
-    cursor: default;
-    display: flex;
-    flex-direction: column;
+    min-height: 110px; background: var(--white); border-radius: 10px;
+    padding: 10px 8px 8px; position: relative; border: 1.5px solid transparent;
+    transition: border-color 0.15s, box-shadow 0.15s; display: flex; flex-direction: column;
   }
   .cal-cell.other-month { background: rgba(250,253,248,0.5); opacity: 0.5; }
   .cal-cell.today { border-color: var(--teal-mid); }
   .cal-cell.has-booking { box-shadow: 0 2px 12px rgba(26,107,107,0.1); }
 
-  .cal-date-num {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-mid);
-    margin-bottom: 6px;
-    line-height: 1;
-  }
+  .cal-date-num { font-size: 13px; font-weight: 500; color: var(--text-mid); margin-bottom: 6px; }
   .cal-cell.today .cal-date-num {
-    color: var(--white);
-    background: var(--teal-mid);
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
+    color: var(--white); background: var(--teal-mid); width: 24px; height: 24px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;
   }
 
   .booking-chip {
-    font-size: 11px;
-    font-weight: 400;
-    padding: 3px 7px;
-    border-radius: 5px;
-    margin-bottom: 3px;
-    cursor: pointer;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    transition: opacity 0.15s;
-    line-height: 1.4;
+    font-size: 11px; font-weight: 400; padding: 3px 7px; border-radius: 5px;
+    margin-bottom: 3px; cursor: pointer; white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis; transition: opacity 0.15s; line-height: 1.4;
   }
   .booking-chip:hover { opacity: 0.8; }
+  .chip-family { background: rgba(123,104,238,0.15); color: #5a46d4; border-left: 3px solid #7B68EE; }
+  .chip-open { background: rgba(46,155,143,0.15); color: var(--teal-deep); border-left: 3px solid var(--teal-mid); }
+  .chip-more { font-size: 10px; color: var(--text-light); padding: 2px 4px; }
 
-  .chip-family {
-    background: rgba(123,104,238,0.15);
-    color: #5a46d4;
-    border-left: 3px solid #7B68EE;
-  }
-  .chip-open {
-    background: rgba(46,155,143,0.15);
-    color: var(--teal-deep);
-    border-left: 3px solid var(--teal-mid);
-  }
-  .chip-more {
-    font-size: 10px;
-    color: var(--text-light);
-    padding: 2px 4px;
-  }
+  .legend { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-mid); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
 
-  /* ── LEGEND ── */
-  .legend {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 12px;
-    color: var(--text-mid);
-  }
-  .legend-dot {
-    width: 10px; height: 10px;
-    border-radius: 3px;
-  }
-
-  /* ── GUEST BANNER ── */
   .guest-banner {
     background: linear-gradient(135deg, var(--teal-deep), var(--teal-mid));
-    color: var(--white);
-    padding: 14px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
+    color: var(--white); padding: 14px 24px; display: flex;
+    align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
   }
-  .guest-banner-text {
-    font-size: 14px;
-    font-weight: 300;
-  }
-  .guest-banner-text strong { font-weight: 500; }
+  .guest-banner-text { font-size: 14px; font-weight: 300; }
 
   /* ── MODAL ── */
   .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(26,43,43,0.6);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    animation: fadeIn 0.2s ease;
+    position: fixed; inset: 0; background: rgba(26,43,43,0.6);
+    backdrop-filter: blur(4px); display: flex; align-items: center;
+    justify-content: center; z-index: 1000; animation: fadeIn 0.2s ease;
   }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
   .modal {
-    background: var(--white);
-    border-radius: 20px;
-    padding: 40px;
-    max-width: 480px;
-    width: 92%;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.2);
-    animation: slideUp 0.25s ease;
+    background: var(--white); border-radius: 20px; padding: 40px;
+    max-width: 480px; width: 92%;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.2); animation: slideUp 0.25s ease;
   }
   @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-  .modal-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 28px;
-    font-weight: 400;
-    color: var(--teal-deep);
-    margin-bottom: 24px;
-  }
-
-  .modal-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 24px;
-    justify-content: flex-end;
-  }
+  .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--teal-deep); margin-bottom: 24px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; }
 
   .btn-cancel {
-    padding: 10px 20px;
-    background: none;
-    border: 1.5px solid var(--sand-dark);
-    border-radius: 8px;
-    font-size: 13px;
-    cursor: pointer;
-    color: var(--text-mid);
-    font-family: 'DM Sans', sans-serif;
-    transition: all 0.2s;
+    padding: 10px 20px; background: none; border: 1.5px solid var(--sand-dark);
+    border-radius: 8px; font-size: 13px; cursor: pointer; color: var(--text-mid);
+    font-family: 'DM Sans', sans-serif; transition: all 0.2s;
   }
   .btn-cancel:hover { border-color: var(--teal-mid); color: var(--teal-deep); }
 
   .btn-save {
-    padding: 10px 24px;
-    background: var(--teal-deep);
-    color: var(--white);
-    border: none;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    transition: background 0.2s;
+    padding: 10px 24px; background: var(--teal-deep); color: var(--white); border: none;
+    border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: background 0.2s;
   }
   .btn-save:hover { background: var(--teal-mid); }
 
   .btn-delete {
-    padding: 10px 20px;
-    background: none;
-    border: 1.5px solid #ffb3b3;
-    color: #c0392b;
-    border-radius: 8px;
-    font-size: 13px;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    margin-right: auto;
-    transition: all 0.2s;
+    padding: 10px 20px; background: none; border: 1.5px solid #ffb3b3; color: #c0392b;
+    border-radius: 8px; font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    margin-right: auto; transition: all 0.2s;
   }
   .btn-delete:hover { background: #fff0f0; }
 
-  .visibility-toggle {
-    display: flex;
-    gap: 10px;
-    margin-top: 8px;
-  }
+  .visibility-toggle { display: flex; gap: 10px; margin-top: 8px; }
   .vis-btn {
-    flex: 1;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1.5px solid var(--sand-dark);
-    background: var(--white);
-    font-size: 12px;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    text-align: center;
-    transition: all 0.2s;
-    color: var(--text-mid);
+    flex: 1; padding: 10px; border-radius: 8px; border: 1.5px solid var(--sand-dark);
+    background: var(--white); font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    text-align: center; transition: all 0.2s; color: var(--text-mid);
   }
-  .vis-btn.active-family {
-    border-color: #7B68EE;
-    background: rgba(123,104,238,0.08);
-    color: #5a46d4;
-    font-weight: 500;
-  }
-  .vis-btn.active-open {
-    border-color: var(--teal-mid);
-    background: rgba(46,155,143,0.08);
-    color: var(--teal-deep);
-    font-weight: 500;
-  }
+  .vis-btn.active-family { border-color: #7B68EE; background: rgba(123,104,238,0.08); color: #5a46d4; font-weight: 500; }
+  .vis-btn.active-open { border-color: var(--teal-mid); background: rgba(46,155,143,0.08); color: var(--teal-deep); font-weight: 500; }
 
-  /* ── BOOKING DETAIL ── */
-  .booking-detail-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 20px;
-  }
-  .booking-detail-name {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 28px;
-    font-weight: 400;
-    color: var(--teal-deep);
-  }
-  .booking-detail-dates {
-    font-size: 14px;
-    color: var(--text-mid);
-    margin-top: 4px;
-  }
-  .booking-detail-note {
-    background: var(--seafoam-pale);
-    padding: 14px 16px;
-    border-radius: 10px;
-    font-size: 14px;
-    color: var(--text-mid);
-    margin-top: 14px;
-    font-style: italic;
-  }
-  .booking-vis-badge {
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-  }
+  .booking-detail-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+  .booking-detail-name { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--teal-deep); }
+  .booking-detail-dates { font-size: 14px; color: var(--text-mid); margin-top: 4px; }
+  .booking-detail-note { background: var(--seafoam-pale); padding: 14px 16px; border-radius: 10px; font-size: 14px; color: var(--text-mid); margin-top: 14px; font-style: italic; }
+  .booking-vis-badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: 500; letter-spacing: 0.5px; }
   .badge-family { background: rgba(123,104,238,0.15); color: #5a46d4; }
   .badge-open { background: rgba(46,155,143,0.15); color: var(--teal-deep); }
 
-  /* ── WHO'S THERE SIDEBAR HINT ── */
-  .whos-there {
-    background: var(--white);
-    border-radius: 14px;
-    padding: 20px;
-    margin-top: 20px;
-    border: 1.5px solid var(--sand);
-  }
-  .whos-there-title {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--text-light);
-    margin-bottom: 14px;
-  }
-  .whos-there-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--seafoam-pale);
-    font-size: 14px;
-    color: var(--text-dark);
-  }
+  .whos-there { background: var(--white); border-radius: 14px; padding: 20px; margin-top: 20px; border: 1.5px solid var(--sand); }
+  .whos-there-title { font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); margin-bottom: 14px; }
+  .whos-there-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--seafoam-pale); font-size: 14px; color: var(--text-dark); }
   .whos-there-item:last-child { border-bottom: none; }
-  .whos-avatar {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 600;
-    color: white;
-    flex-shrink: 0;
-  }
-  .whos-dates {
-    font-size: 12px;
-    color: var(--text-light);
-    margin-left: auto;
-  }
+  .whos-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: white; flex-shrink: 0; }
+  .whos-dates { font-size: 12px; color: var(--text-light); margin-left: auto; }
 
-  /* ── TOAST ── */
   .toast {
-    position: fixed;
-    bottom: 28px;
-    left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: var(--teal-deep);
-    color: var(--white);
-    padding: 12px 24px;
-    border-radius: 50px;
-    font-size: 14px;
-    z-index: 2000;
-    transition: transform 0.3s ease;
-    pointer-events: none;
-    white-space: nowrap;
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--teal-deep); color: var(--white); padding: 12px 24px;
+    border-radius: 50px; font-size: 14px; z-index: 2000; transition: transform 0.3s ease;
+    pointer-events: none; white-space: nowrap;
   }
   .toast.show { transform: translateX(-50%) translateY(0); }
 
-  /* ── RESPONSIVE ── */
   @media (max-width: 700px) {
     .cal-cell { min-height: 72px; }
     .cal-month-title { font-size: 26px; min-width: 180px; }
     .booking-chip { font-size: 10px; padding: 2px 5px; }
     .app-header { padding: 0 16px; }
     .header-user { display: none; }
+    .landing-title { font-size: 42px; }
+    .property-badge { display: none; }
+    .photo-strip { height: 80px; }
   }
 `;
 
-// ─── HELPERS ────────────────────────────────────────────────────────────────
+// ── HELPERS ──────────────────────────────────────────────────────────────────
 const api = async (path, opts = {}) => {
   const token = localStorage.getItem("bh_token");
   const res = await fetch(`/api/${path}`, {
@@ -808,16 +666,22 @@ const avatarColor = (name) => {
   return colors[Math.abs(hash) % colors.length];
 };
 
-// ─── TOAST ──────────────────────────────────────────────────────────────────
+// ── TOAST ────────────────────────────────────────────────────────────────────
 function Toast({ msg }) {
   return <div className={`toast ${msg ? "show" : ""}`}>{msg}</div>;
 }
 
-// ─── LANDING ────────────────────────────────────────────────────────────────
+// ── LANDING ──────────────────────────────────────────────────────────────────
 function Landing({ onEnter, onFamilyClick }) {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [slide, setSlide] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setSlide(s => (s + 1) % 3), 5000);
+    return () => clearInterval(t);
+  }, []);
 
   const handleEnter = async () => {
     if (!code.trim()) return;
@@ -825,7 +689,7 @@ function Landing({ onEnter, onFamilyClick }) {
     try {
       await api("passkey", {
         method: "POST",
-        body: JSON.stringify({ passkey: code.trim().toLowerCase() }),
+        body: JSON.stringify({ passkey: code.trim() }),
       });
       onEnter("guest");
     } catch (e) {
@@ -835,21 +699,52 @@ function Landing({ onEnter, onFamilyClick }) {
     }
   };
 
+  const particles = Array.from({ length: 12 }, (_, i) => ({
+    id: i,
+    size: Math.random() * 60 + 20,
+    left: Math.random() * 100,
+    duration: Math.random() * 15 + 10,
+    delay: Math.random() * 10,
+  }));
+
   return (
     <div className="landing">
-      <div className="landing-palms">
-        <svg className="palm-left" width="220" height="400" viewBox="0 0 220 400" fill="white">
-          <path d="M60,400 Q65,300 80,250 Q40,220 10,180 Q50,200 85,230 Q75,180 60,120 Q90,160 95,220 Q110,160 120,100 Q115,170 100,230 Q130,180 160,160 Q130,200 105,245 Q120,290 120,400Z"/>
-        </svg>
-        <svg className="palm-right" width="220" height="400" viewBox="0 0 220 400" fill="white">
-          <path d="M60,400 Q65,300 80,250 Q40,220 10,180 Q50,200 85,230 Q75,180 60,120 Q90,160 95,220 Q110,160 120,100 Q115,170 100,230 Q130,180 160,160 Q130,200 105,245 Q120,290 120,400Z"/>
-        </svg>
+      {/* Animated background */}
+      <div className="bg-scene">
+        {[0,1,2].map(i => (
+          <div key={i} className={`bg-slide ${slide === i ? "active" : ""}`} />
+        ))}
+      </div>
+      <div className="bg-overlay" />
+
+      {/* Floating particles */}
+      <div className="particles">
+        {particles.map(p => (
+          <div key={p.id} className="particle" style={{
+            width: p.size, height: p.size,
+            left: `${p.left}%`,
+            animationDuration: `${p.duration}s`,
+            animationDelay: `${p.delay}s`,
+          }} />
+        ))}
       </div>
 
+      {/* Property badge */}
+      <div className="property-badge">
+        <span className="property-badge-item">🏠 16 Sunset Key Dr</span>
+        <span className="property-badge-dot" />
+        <span className="property-badge-item">4 bed · 4 bath</span>
+        <span className="property-badge-dot" />
+        <span className="property-badge-item">Key West, FL</span>
+      </div>
+
+      {/* Main card */}
       <div className="landing-card">
-        <span className="house-icon">🌴</span>
+        <div className="house-emblem">🌴</div>
+        <div className="landing-eyebrow">Private Residence</div>
         <div className="landing-title">Casa Kallman</div>
         <div className="landing-subtitle">Key West, Florida</div>
+        <div className="divider" />
 
         <label className="passkey-label">Enter your passkey</label>
         <input
@@ -863,24 +758,24 @@ function Landing({ onEnter, onFamilyClick }) {
         />
         {error && <div className="error-msg">{error}</div>}
         <button className="btn-enter" onClick={handleEnter} disabled={loading}>
-          {loading ? "Checking..." : "Enter the House"}
+          {loading ? "Verifying..." : "Enter the House"}
         </button>
         <button className="family-link" onClick={onFamilyClick}>
           I'm a family member →
         </button>
       </div>
 
-      <svg className="landing-waves" viewBox="0 0 1440 200" preserveAspectRatio="none">
-        <path d="M0,100 C360,180 720,20 1080,100 C1260,140 1380,80 1440,100 L1440,200 L0,200Z" fill="white"/>
-        <path d="M0,140 C300,80 600,160 900,120 C1100,95 1300,130 1440,140 L1440,200 L0,200Z" fill="white" opacity="0.5"/>
-      </svg>
+      {/* Photo strip */}
+      <div className="photo-strip">
+        {[0,1,2,3,4].map(i => <div key={i} className="photo-tile" />)}
+      </div>
     </div>
   );
 }
 
-// ─── FAMILY LOGIN ────────────────────────────────────────────────────────────
+// ── FAMILY LOGIN ─────────────────────────────────────────────────────────────
 function FamilyLogin({ onBack, onSuccess }) {
-  const [mode, setMode] = useState("login"); // login | register
+  const [mode, setMode] = useState("login");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [familyPasskey, setFamilyPasskey] = useState("");
@@ -910,12 +805,8 @@ function FamilyLogin({ onBack, onSuccess }) {
     <div className="login-screen">
       <div className="login-card">
         <button className="login-back" onClick={onBack}>← Back</button>
-        <div className="login-title">
-          {mode === "login" ? "Welcome back" : "Join the family"}
-        </div>
-        <div className="login-sub">
-          {mode === "login" ? "Log in to manage bookings." : "Create your family account."}
-        </div>
+        <div className="login-title">{mode === "login" ? "Welcome back" : "Join the family"}</div>
+        <div className="login-sub">{mode === "login" ? "Log in to manage bookings." : "Create your family account."}</div>
 
         <div className="field-group">
           <label className="field-label">Your name</label>
@@ -929,7 +820,7 @@ function FamilyLogin({ onBack, onSuccess }) {
         </div>
         {mode === "register" && (
           <div className="field-group">
-            <label className="field-label">Family passkey (to verify you're family)</label>
+            <label className="field-label">Family passkey</label>
             <input className="field-input" type="password" value={familyPasskey}
               onChange={e => setFamilyPasskey(e.target.value)} onKeyDown={e => e.key === "Enter" && handle()} />
           </div>
@@ -939,22 +830,19 @@ function FamilyLogin({ onBack, onSuccess }) {
           {loading ? "..." : mode === "login" ? "Log In" : "Create Account"}
         </button>
         <div className="toggle-mode">
-          {mode === "login" ? (
-            <>New to the app?{" "}<button onClick={() => { setMode("register"); setError(""); }}>Create account</button></>
-          ) : (
-            <>Already have an account?{" "}<button onClick={() => { setMode("login"); setError(""); }}>Log in</button></>
-          )}
+          {mode === "login"
+            ? <><span>New to the app? </span><button onClick={() => { setMode("register"); setError(""); }}>Create account</button></>
+            : <><span>Already have an account? </span><button onClick={() => { setMode("login"); setError(""); }}>Log in</button></>}
         </div>
       </div>
     </div>
   );
 }
 
-// ─── ADD/EDIT MODAL ──────────────────────────────────────────────────────────
+// ── BOOKING MODAL ─────────────────────────────────────────────────────────────
 function BookingModal({ booking, user, onClose, onSave, onDelete }) {
   const isEdit = !!booking?.id;
   const today = new Date().toISOString().split("T")[0];
-
   const [name, setName] = useState(booking?.name || user?.name || "");
   const [startDate, setStartDate] = useState(booking?.startDate || today);
   const [endDate, setEndDate] = useState(booking?.endDate || today);
@@ -966,10 +854,8 @@ function BookingModal({ booking, user, onClose, onSave, onDelete }) {
     if (!name || !startDate || !endDate) return;
     if (endDate < startDate) { alert("End date must be after start date."); return; }
     setLoading(true);
-    try {
-      await onSave({ name, startDate, endDate, note, visibility, id: booking?.id });
-      onClose();
-    } finally { setLoading(false); }
+    try { await onSave({ name, startDate, endDate, note, visibility, id: booking?.id }); onClose(); }
+    finally { setLoading(false); }
   };
 
   const handleDelete = async () => {
@@ -982,7 +868,6 @@ function BookingModal({ booking, user, onClose, onSave, onDelete }) {
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal">
         <div className="modal-title">{isEdit ? "Edit Booking" : "Add Booking"}</div>
-
         <div className="field-group">
           <label className="field-label">Name</label>
           <input className="field-input" value={name} onChange={e => setName(e.target.value)} placeholder="Who's coming?" />
@@ -1004,26 +889,21 @@ function BookingModal({ booking, user, onClose, onSave, onDelete }) {
         <div className="field-group">
           <label className="field-label">Visibility</label>
           <div className="visibility-toggle">
-            <button className={`vis-btn ${visibility === "family" ? "active-family" : ""}`}
-              onClick={() => setVisibility("family")}>🔒 Family only</button>
-            <button className={`vis-btn ${visibility === "open" ? "active-open" : ""}`}
-              onClick={() => setVisibility("open")}>🌊 Open for guests</button>
+            <button className={`vis-btn ${visibility === "family" ? "active-family" : ""}`} onClick={() => setVisibility("family")}>🔒 Family only</button>
+            <button className={`vis-btn ${visibility === "open" ? "active-open" : ""}`} onClick={() => setVisibility("open")}>🌊 Open for guests</button>
           </div>
         </div>
-
         <div className="modal-actions">
           {isEdit && <button className="btn-delete" onClick={handleDelete} disabled={loading}>Remove</button>}
           <button className="btn-cancel" onClick={onClose}>Cancel</button>
-          <button className="btn-save" onClick={handleSave} disabled={loading}>
-            {loading ? "Saving..." : "Save"}
-          </button>
+          <button className="btn-save" onClick={handleSave} disabled={loading}>{loading ? "Saving..." : "Save"}</button>
         </div>
       </div>
     </div>
   );
 }
 
-// ─── BOOKING DETAIL MODAL ────────────────────────────────────────────────────
+// ── BOOKING DETAIL MODAL ──────────────────────────────────────────────────────
 function BookingDetailModal({ booking, user, onClose, onEdit, onDelete }) {
   const canEdit = user && (user.name === booking.name || user.isAdmin);
   return (
@@ -1032,9 +912,7 @@ function BookingDetailModal({ booking, user, onClose, onEdit, onDelete }) {
         <div className="booking-detail-header">
           <div>
             <div className="booking-detail-name">{booking.name}</div>
-            <div className="booking-detail-dates">
-              {formatDate(booking.startDate)} → {formatDate(booking.endDate)}
-            </div>
+            <div className="booking-detail-dates">{formatDate(booking.startDate)} → {formatDate(booking.endDate)}</div>
           </div>
           <span className={`booking-vis-badge ${booking.visibility === "open" ? "badge-open" : "badge-family"}`}>
             {booking.visibility === "open" ? "Open" : "Family"}
@@ -1051,30 +929,23 @@ function BookingDetailModal({ booking, user, onClose, onEdit, onDelete }) {
   );
 }
 
-// ─── CALENDAR ────────────────────────────────────────────────────────────────
+// ── CALENDAR ──────────────────────────────────────────────────────────────────
 function Calendar({ user, bookings, onAdd, onEdit, onDelete, isGuest }) {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
   const [detailBooking, setDetailBooking] = useState(null);
-
   const todayStr = dateStr(now.getFullYear(), now.getMonth(), now.getDate());
 
-  const visibleBookings = isGuest
-    ? bookings.filter(b => b.visibility === "open")
-    : bookings;
+  const visibleBookings = isGuest ? bookings.filter(b => b.visibility === "open") : bookings;
 
-  // Build grid
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const daysInPrev = new Date(year, month, 0).getDate();
   const cells = [];
-  for (let i = firstDay - 1; i >= 0; i--)
-    cells.push({ day: daysInPrev - i, current: false });
-  for (let i = 1; i <= daysInMonth; i++)
-    cells.push({ day: i, current: true });
-  while (cells.length % 7 !== 0)
-    cells.push({ day: cells.length - daysInMonth - firstDay + 1, current: false });
+  for (let i = firstDay - 1; i >= 0; i--) cells.push({ day: daysInPrev - i, current: false });
+  for (let i = 1; i <= daysInMonth; i++) cells.push({ day: i, current: true });
+  while (cells.length % 7 !== 0) cells.push({ day: cells.length - daysInMonth - firstDay + 1, current: false });
 
   const bookingsForCell = (day, current) => {
     if (!current) return [];
@@ -1082,12 +953,9 @@ function Calendar({ user, bookings, onAdd, onEdit, onDelete, isGuest }) {
     return visibleBookings.filter(b => isInRange(ds, b.startDate, b.endDate));
   };
 
-  // Who's there this month
   const monthStart = dateStr(year, month, 1);
   const monthEnd = dateStr(year, month, daysInMonth);
-  const thisMonthBookings = visibleBookings.filter(b =>
-    b.startDate <= monthEnd && b.endDate >= monthStart
-  );
+  const thisMonthBookings = visibleBookings.filter(b => b.startDate <= monthEnd && b.endDate >= monthStart);
 
   const prevMonth = () => { if (month === 0) { setMonth(11); setYear(y => y - 1); } else setMonth(m => m - 1); };
   const nextMonth = () => { if (month === 11) { setMonth(0); setYear(y => y + 1); } else setMonth(m => m + 1); };
@@ -1096,12 +964,10 @@ function Calendar({ user, bookings, onAdd, onEdit, onDelete, isGuest }) {
     <div className="app-shell">
       {isGuest && (
         <div className="guest-banner">
-          <div className="guest-banner-text">
-            <strong>Guest view</strong> — showing dates the house is open for friends
-          </div>
+          <div className="guest-banner-text"><strong>Guest view</strong> — showing dates the house is open for friends</div>
         </div>
       )}
-      <div style={{background:"var(--teal-deep)",padding:"0 32px",height:64,display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100,boxShadow:"0 2px 20px rgba(26,107,107,0.3)"}}>
+      <div className="app-header">
         <div className="header-brand">
           <span className="header-name">Casa Kallman</span>
           <span className="header-badge">{isGuest ? "Guest" : "Family"}</span>
@@ -1109,17 +975,14 @@ function Calendar({ user, bookings, onAdd, onEdit, onDelete, isGuest }) {
         <div className="header-right">
           {user && <span className="header-user">Hi, {user.name}</span>}
           {user && (
-            <button className="btn-logout" onClick={() => {
-              localStorage.removeItem("bh_token");
-              localStorage.removeItem("bh_user");
-              window.location.reload();
-            }}>Sign out</button>
+            <button className="btn-logout" onClick={() => { localStorage.removeItem("bh_token"); localStorage.removeItem("bh_user"); window.location.reload(); }}>
+              Sign out
+            </button>
           )}
           {isGuest && (
-            <button className="btn-logout" onClick={() => {
-              sessionStorage.removeItem("bh_passkey_ok");
-              window.location.reload();
-            }}>Exit</button>
+            <button className="btn-logout" onClick={() => { sessionStorage.removeItem("bh_passkey_ok"); window.location.reload(); }}>
+              Exit
+            </button>
           )}
         </div>
       </div>
@@ -1145,9 +1008,7 @@ function Calendar({ user, bookings, onAdd, onEdit, onDelete, isGuest }) {
               </div>
             </div>
             {!isGuest && user && (
-              <button className="btn-add-booking" onClick={() => onAdd()}>
-                + Add Stay
-              </button>
+              <button className="btn-add-booking" onClick={() => onAdd()}>+ Add Stay</button>
             )}
           </div>
         </div>
@@ -1165,16 +1026,12 @@ function Calendar({ user, bookings, onAdd, onEdit, onDelete, isGuest }) {
               <div key={i} className={`cal-cell ${!cell.current ? "other-month" : ""} ${isToday ? "today" : ""} ${chips.length > 0 ? "has-booking" : ""}`}>
                 <div className="cal-date-num">{cell.day}</div>
                 {chips.slice(0, 2).map(b => (
-                  <div key={b.id}
-                    className={`booking-chip ${b.visibility === "open" ? "chip-open" : "chip-family"}`}
-                    onClick={() => setDetailBooking(b)}
-                    title={b.name}>
+                  <div key={b.id} className={`booking-chip ${b.visibility === "open" ? "chip-open" : "chip-family"}`}
+                    onClick={() => setDetailBooking(b)} title={b.name}>
                     {b.name}
                   </div>
                 ))}
-                {chips.length > 2 && (
-                  <div className="chip-more">+{chips.length - 2} more</div>
-                )}
+                {chips.length > 2 && <div className="chip-more">+{chips.length - 2} more</div>}
               </div>
             );
           })}
@@ -1185,9 +1042,7 @@ function Calendar({ user, bookings, onAdd, onEdit, onDelete, isGuest }) {
             <div className="whos-there-title">At the house this month</div>
             {thisMonthBookings.map(b => (
               <div key={b.id} className="whos-there-item">
-                <div className="whos-avatar" style={{background: avatarColor(b.name)}}>
-                  {b.name?.[0]?.toUpperCase()}
-                </div>
+                <div className="whos-avatar" style={{background: avatarColor(b.name)}}>{b.name?.[0]?.toUpperCase()}</div>
                 <div>
                   <div style={{fontWeight:500}}>{b.name}</div>
                   {b.note && <div style={{fontSize:12,color:"var(--text-light)"}}>{b.note}</div>}
@@ -1200,21 +1055,18 @@ function Calendar({ user, bookings, onAdd, onEdit, onDelete, isGuest }) {
       </div>
 
       {detailBooking && (
-        <BookingDetailModal
-          booking={detailBooking}
-          user={user}
+        <BookingDetailModal booking={detailBooking} user={user}
           onClose={() => setDetailBooking(null)}
           onEdit={(b) => { setDetailBooking(null); onEdit(b); }}
-          onDelete={onDelete}
-        />
+          onDelete={onDelete} />
       )}
     </div>
   );
 }
 
-// ─── APP ROOT ────────────────────────────────────────────────────────────────
+// ── APP ROOT ──────────────────────────────────────────────────────────────────
 export default function App() {
-  const [screen, setScreen] = useState("landing"); // landing | familyLogin | app
+  const [screen, setScreen] = useState("landing");
   const [isGuest, setIsGuest] = useState(false);
   const [user, setUser] = useState(null);
   const [bookings, setBookings] = useState([]);
@@ -1222,114 +1074,56 @@ export default function App() {
   const [editBooking, setEditBooking] = useState(null);
   const [toast, setToast] = useState("");
 
-  const showToast = (msg) => {
-    setToast(msg);
-    setTimeout(() => setToast(""), 3000);
-  };
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(""), 3000); };
 
   const fetchBookings = useCallback(async () => {
-    try {
-      const data = await api("bookings");
-      setBookings(data.bookings || []);
-    } catch {}
+    try { const data = await api("bookings"); setBookings(data.bookings || []); } catch {}
   }, []);
 
-  // Restore session
   useEffect(() => {
     const token = localStorage.getItem("bh_token");
     const savedUser = localStorage.getItem("bh_user");
     const guestOk = sessionStorage.getItem("bh_passkey_ok");
-
-    if (token && savedUser) {
-      setUser(JSON.parse(savedUser));
-      setIsGuest(false);
-      setScreen("app");
-    } else if (guestOk === "true") {
-      setIsGuest(true);
-      setScreen("app");
-    }
+    if (token && savedUser) { setUser(JSON.parse(savedUser)); setIsGuest(false); setScreen("app"); }
+    else if (guestOk === "true") { setIsGuest(true); setScreen("app"); }
   }, []);
 
-  useEffect(() => {
-    if (screen === "app") fetchBookings();
-  }, [screen, fetchBookings]);
+  useEffect(() => { if (screen === "app") fetchBookings(); }, [screen, fetchBookings]);
 
-  const handleGuestEnter = () => {
-    sessionStorage.setItem("bh_passkey_ok", "true");
-    setIsGuest(true);
-    setScreen("app");
-  };
-
-  const handleFamilyLogin = (u) => {
-    setUser(u);
-    setIsGuest(false);
-    setScreen("app");
-  };
+  const handleGuestEnter = () => { sessionStorage.setItem("bh_passkey_ok", "true"); setIsGuest(true); setScreen("app"); };
+  const handleFamilyLogin = (u) => { setUser(u); setIsGuest(false); setScreen("app"); };
 
   const handleSave = async (booking) => {
     try {
       if (booking.id) {
-        await api(`bookings/${booking.id}`, {
-          method: "PUT",
-          body: JSON.stringify(booking),
-        });
+        await api(`bookings/${booking.id}`, { method: "PUT", body: JSON.stringify(booking) });
         showToast("Booking updated!");
       } else {
-        await api("bookings", {
-          method: "POST",
-          body: JSON.stringify(booking),
-        });
+        await api("bookings", { method: "POST", body: JSON.stringify(booking) });
         showToast("Booking added!");
       }
       fetchBookings();
-    } catch (e) {
-      showToast("Something went wrong.");
-    }
+    } catch { showToast("Something went wrong."); }
   };
 
   const handleDelete = async (id) => {
-    try {
-      await api(`bookings/${id}`, { method: "DELETE" });
-      showToast("Booking removed.");
-      fetchBookings();
-    } catch {
-      showToast("Could not delete.");
-    }
+    try { await api(`bookings/${id}`, { method: "DELETE" }); showToast("Booking removed."); fetchBookings(); }
+    catch { showToast("Could not delete."); }
   };
 
   return (
     <>
       <style>{css}</style>
-      {screen === "landing" && (
-        <Landing
-          onEnter={handleGuestEnter}
-          onFamilyClick={() => setScreen("familyLogin")}
-        />
-      )}
-      {screen === "familyLogin" && (
-        <FamilyLogin
-          onBack={() => setScreen("landing")}
-          onSuccess={handleFamilyLogin}
-        />
-      )}
+      {screen === "landing" && <Landing onEnter={handleGuestEnter} onFamilyClick={() => setScreen("familyLogin")} />}
+      {screen === "familyLogin" && <FamilyLogin onBack={() => setScreen("landing")} onSuccess={handleFamilyLogin} />}
       {screen === "app" && (
-        <Calendar
-          user={user}
-          bookings={bookings}
-          isGuest={isGuest}
-          onAdd={() => setAddModal(true)}
-          onEdit={(b) => setEditBooking(b)}
-          onDelete={handleDelete}
-        />
+        <Calendar user={user} bookings={bookings} isGuest={isGuest}
+          onAdd={() => setAddModal(true)} onEdit={(b) => setEditBooking(b)} onDelete={handleDelete} />
       )}
       {(addModal || editBooking) && (
-        <BookingModal
-          booking={editBooking}
-          user={user}
+        <BookingModal booking={editBooking} user={user}
           onClose={() => { setAddModal(false); setEditBooking(null); }}
-          onSave={handleSave}
-          onDelete={handleDelete}
-        />
+          onSave={handleSave} onDelete={handleDelete} />
       )}
       <Toast msg={toast} />
     </>
