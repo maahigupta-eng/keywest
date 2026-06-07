@@ -7,7 +7,7 @@ const headers = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-const JWT_SECRET = process.env.JWT_SECRET || "change-me-in-netlify-env";
+const JWT_SECRET = process.env.JWT_SECRET || "change-me";
 
 function verifyToken(token) {
   try {
@@ -25,11 +25,14 @@ function getUser(event) {
 }
 
 export const handler = async (event) => {
-  if (event.httpMethod === "OPTIONS") {
-    return { statusCode: 200, headers, body: "" };
-  }
+  if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers, body: "" };
 
-  const store = getStore({ name: "beach-house-bookings", consistency: "strong" });
+  const store = getStore({
+    name: "beach-house-bookings",
+    siteID: process.env.NETLIFY_SITE_ID,
+    token: process.env.NETLIFY_TOKEN,
+  });
+
   const pathParts = event.path.replace(/.*\/api\/bookings\/?/, "").split("/").filter(Boolean);
   const bookingId = pathParts[0] || null;
 
@@ -38,11 +41,9 @@ export const handler = async (event) => {
       const user = getUser(event);
       let list = { blobs: [] };
       try { list = await store.list(); } catch {}
-      const bookings = await Promise.all(
-        list.blobs.map(async b => {
-          try { return await store.get(b.key, { type: "json" }); } catch { return null; }
-        })
-      );
+      const bookings = await Promise.all(list.blobs.map(async b => {
+        try { return await store.get(b.key, { type: "json" }); } catch { return null; }
+      }));
       const valid = bookings.filter(Boolean).sort((a, b) => a.startDate.localeCompare(b.startDate));
       const filtered = user ? valid : valid.filter(b => b.visibility === "open");
       return { statusCode: 200, headers, body: JSON.stringify({ bookings: filtered }) };
@@ -51,12 +52,10 @@ export const handler = async (event) => {
     if (event.httpMethod === "POST" && !bookingId) {
       const user = getUser(event);
       if (!user) return { statusCode: 401, headers, body: JSON.stringify({ error: "Login required" }) };
-      const { name, startDate, endDate, note, visibility } = JSON.parse(event.body || "{}");
-      if (!name || !startDate || !endDate) {
-        return { statusCode: 400, headers, body: JSON.stringify({ error: "name, startDate, endDate required" }) };
-      }
+      const { name, startDate, endDate, note, visibility, color } = JSON.parse(event.body || "{}");
+      if (!name || !startDate || !endDate) return { statusCode: 400, headers, body: JSON.stringify({ error: "Missing fields" }) };
       const id = crypto.randomUUID();
-      const booking = { id, name, startDate, endDate, note: note || "", visibility: visibility || "family", createdBy: user.userKey, createdAt: new Date().toISOString() };
+      const booking = { id, name, startDate, endDate, note: note || "", visibility: visibility || "family", color: color || "#2E9B8F", createdBy: user.userKey, createdAt: new Date().toISOString() };
       await store.setJSON(id, booking);
       return { statusCode: 201, headers, body: JSON.stringify({ booking }) };
     }
@@ -67,11 +66,9 @@ export const handler = async (event) => {
       let existing = null;
       try { existing = await store.get(bookingId, { type: "json" }); } catch {}
       if (!existing) return { statusCode: 404, headers, body: JSON.stringify({ error: "Not found" }) };
-      if (!user.isAdmin && existing.createdBy !== user.userKey) {
-        return { statusCode: 403, headers, body: JSON.stringify({ error: "Not your booking" }) };
-      }
-      const { name, startDate, endDate, note, visibility } = JSON.parse(event.body || "{}");
-      const updated = { ...existing, name, startDate, endDate, note, visibility, updatedAt: new Date().toISOString() };
+      if (!user.isAdmin && existing.createdBy !== user.userKey) return { statusCode: 403, headers, body: JSON.stringify({ error: "Not your booking" }) };
+      const { name, startDate, endDate, note, visibility, color } = JSON.parse(event.body || "{}");
+      const updated = { ...existing, name, startDate, endDate, note, visibility, color, updatedAt: new Date().toISOString() };
       await store.setJSON(bookingId, updated);
       return { statusCode: 200, headers, body: JSON.stringify({ booking: updated }) };
     }
@@ -82,17 +79,13 @@ export const handler = async (event) => {
       let existing = null;
       try { existing = await store.get(bookingId, { type: "json" }); } catch {}
       if (!existing) return { statusCode: 404, headers, body: JSON.stringify({ error: "Not found" }) };
-      if (!user.isAdmin && existing.createdBy !== user.userKey) {
-        return { statusCode: 403, headers, body: JSON.stringify({ error: "Not your booking" }) };
-      }
+      if (!user.isAdmin && existing.createdBy !== user.userKey) return { statusCode: 403, headers, body: JSON.stringify({ error: "Not your booking" }) };
       await store.delete(bookingId);
       return { statusCode: 200, headers, body: JSON.stringify({ ok: true }) };
     }
 
     return { statusCode: 404, headers, body: JSON.stringify({ error: "Not found" }) };
-
   } catch (err) {
-    console.error("Bookings error:", err);
     return { statusCode: 500, headers, body: JSON.stringify({ error: "Server error: " + err.message }) };
   }
 };
