@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { getStore } from "@netlify/blobs";
 
 const headers = {
   "Content-Type": "application/json",
@@ -33,7 +34,6 @@ export const handler = async (event) => {
       return { statusCode: 401, headers, body: JSON.stringify({ error: "Incorrect family passkey." }) };
     }
 
-    const { getStore } = await import("@netlify/blobs");
     const store = getStore("beach-house-users");
     const userKey = name.trim().toLowerCase().replace(/\s+/g, "_");
 
@@ -47,4 +47,10 @@ export const handler = async (event) => {
     const isAdmin = allKeys.blobs.length === 0;
     const user = { name: name.trim(), userKey, hash, salt, isAdmin, createdAt: new Date().toISOString() };
     await store.setJSON(userKey, user);
-    const token = signToken({ userKey, name: u
+    const token = signToken({ userKey, name: user.name, isAdmin });
+    return { statusCode: 200, headers, body: JSON.stringify({ token, user: { name: user.name, isAdmin } }) };
+
+  } catch (err) {
+    return { statusCode: 500, headers, body: JSON.stringify({ error: "Server error: " + err.message }) };
+  }
+};
