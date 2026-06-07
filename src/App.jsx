@@ -514,6 +514,65 @@ const css = `
   .photo-empty-strip{margin-top:22px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
   .photo-empty-card{height:150px;border-radius:20px;background:rgba(253,250,246,0.65);border:1px solid rgba(200,184,152,0.42);display:flex;align-items:center;justify-content:center;color:rgba(26,107,90,0.22);font-size:34px;}
 
+
+
+  /* ── ALIVE CALENDAR ATMOSPHERE ── */
+  @keyframes casaAtmosphere{
+    0%{background-position:0% 45%,100% 65%,0 0;filter:saturate(1);}
+    33%{background-position:18% 30%,82% 60%,0 0;filter:saturate(1.03);}
+    66%{background-position:42% 22%,70% 78%,0 0;filter:saturate(1.06);}
+    100%{background-position:0% 45%,100% 65%,0 0;filter:saturate(1);}
+  }
+  .app-shell{
+    background:
+      radial-gradient(circle at 14% 18%,rgba(91,191,163,0.16),transparent 30%),
+      radial-gradient(circle at 88% 76%,rgba(232,137,74,0.16),transparent 32%),
+      linear-gradient(130deg,#F8F2E7 0%,#F2E8D7 35%,#EEF8F5 68%,#E9DCC8 100%) !important;
+    background-size:130% 130%,140% 140%,100% 100%;
+    animation:casaAtmosphere 240s ease-in-out infinite;
+  }
+  .app-shell::before{content:'' !important;position:fixed;inset:98px 280px 0 0;pointer-events:none;z-index:0;opacity:1;background:
+    linear-gradient(90deg,transparent 0 12%,rgba(26,107,90,0.035) 12.2% 12.6%,transparent 12.8% 100%),
+    linear-gradient(0deg,transparent 0 18%,rgba(26,107,90,0.028) 18.2% 18.55%,transparent 18.8% 100%),
+    radial-gradient(circle at 28% 34%,transparent 0 82px,rgba(26,107,90,0.03) 83px 84px,transparent 85px),
+    radial-gradient(circle at 68% 62%,transparent 0 118px,rgba(14,26,22,0.025) 119px 120px,transparent 121px);
+    background-size:180px 180px,220px 220px,100% 100%,100% 100%;}
+  .app-shell::after{content:'Sunset Key';position:fixed;right:330px;bottom:28px;font-family:'Cormorant Garamond',serif;font-size:72px;font-style:italic;color:rgba(26,107,90,0.045);pointer-events:none;z-index:0;}
+  .cal-main-area{z-index:1;}
+  .calendar-hero-row{display:grid;grid-template-columns:minmax(280px,1fr) 250px;gap:14px;margin-bottom:22px;align-items:stretch;}
+  .house-status-card,.calendar-weather-card{background:rgba(253,250,246,0.78);border:1px solid rgba(232,220,200,0.9);border-radius:24px;padding:20px 22px;box-shadow:0 18px 50px rgba(14,26,22,0.08);backdrop-filter:blur(12px);position:relative;overflow:hidden;}
+  .house-status-card::after{content:'';position:absolute;right:-28px;bottom:-38px;width:160px;height:160px;border-radius:50%;background:rgba(91,191,163,0.10);}
+  .house-status-label,.calendar-weather-label{font-size:10px;letter-spacing:2.6px;text-transform:uppercase;color:var(--teal-mid);margin-bottom:10px;font-weight:400;}
+  .house-status-main{display:flex;align-items:center;gap:12px;font-family:'Cormorant Garamond',serif;font-size:30px;color:var(--teal);font-weight:400;line-height:1;}
+  .status-dot-live{width:11px;height:11px;border-radius:50%;background:var(--teal-mid);box-shadow:0 0 0 7px rgba(46,155,127,0.11);}
+  .status-dot-live.open{background:var(--sunset);box-shadow:0 0 0 7px rgba(232,137,74,0.12);}
+  .house-status-sub{margin-top:9px;font-size:14px;color:var(--mid);font-weight:300;line-height:1.55;}
+  .calendar-weather-card{display:flex;align-items:center;justify-content:space-between;gap:16px;}
+  .calendar-weather-temp{font-family:'Cormorant Garamond',serif;font-size:48px;color:var(--teal);line-height:.85;font-weight:400;}
+  .calendar-weather-cond{font-size:13px;color:var(--mid);font-weight:300;line-height:1.45;}
+  .calendar-weather-emoji{font-size:34px;}
+  .occupancy-board{background:rgba(253,250,246,0.74);border:1px solid rgba(232,220,200,0.95);border-radius:30px;padding:28px;box-shadow:0 24px 70px rgba(14,26,22,0.10);backdrop-filter:blur(14px);position:relative;overflow:hidden;}
+  .occupancy-board::before{content:'Occupancy';position:absolute;right:28px;top:18px;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:42px;color:rgba(26,107,90,0.055);pointer-events:none;}
+  .occupancy-row{display:grid;grid-template-columns:72px 1fr 70px;gap:18px;align-items:center;padding:13px 0;border-bottom:1px solid rgba(232,220,200,0.72);position:relative;z-index:1;}
+  .occupancy-row:last-child{border-bottom:none;}
+  .occ-month{font-family:'Cormorant Garamond',serif;font-size:24px;font-style:italic;color:var(--teal);letter-spacing:.6px;}
+  .occ-track{height:28px;border-radius:999px;background:linear-gradient(90deg,rgba(245,239,227,0.98),rgba(232,220,200,0.72));position:relative;overflow:hidden;border:1px solid rgba(200,184,152,0.42);box-shadow:inset 0 1px 3px rgba(14,26,22,0.06);}
+  .occ-fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,var(--teal),var(--teal-light));box-shadow:0 5px 18px rgba(46,155,127,0.22);min-width:0;transition:width .5s ease;}
+  .occ-segment{position:absolute;top:4px;bottom:4px;border-radius:999px;background:var(--member-color);box-shadow:0 2px 10px rgba(14,26,22,.14);opacity:.95;}
+  .occ-holiday{position:absolute;top:50%;width:7px;height:7px;border-radius:50%;background:var(--sunset);transform:translate(-50%,-50%);box-shadow:0 0 0 4px rgba(232,137,74,0.12);}
+  .occ-percent{text-align:right;font-size:13px;color:var(--mid);font-weight:400;}
+  .occ-detail{grid-column:2 / span 2;margin-top:-6px;font-size:12px;color:var(--light);font-weight:300;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .view-toggle{display:flex;border:1px solid rgba(200,184,152,.7);background:rgba(253,250,246,.7);border-radius:999px;padding:3px;}
+  .view-toggle button{border:0;background:transparent;border-radius:999px;padding:7px 13px;font-family:'Jost',sans-serif;font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--mid);cursor:pointer;}
+  .view-toggle button.active{background:var(--teal);color:var(--white);}
+  .memory-hero{background:linear-gradient(135deg,rgba(253,250,246,.82),rgba(238,248,245,.82)),url('') ;border:1px solid rgba(232,220,200,.9);border-radius:34px;padding:46px;box-shadow:0 24px 70px rgba(14,26,22,.09);position:relative;overflow:hidden;}
+  .memory-hero::before{content:'Family Memories';position:absolute;right:28px;bottom:-10px;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:54px;color:rgba(26,107,90,.06);}
+  .memory-empty{display:grid;grid-template-columns:1.1fr .9fr;gap:28px;margin-top:22px;align-items:stretch;}
+  .memory-album-card{min-height:280px;border-radius:30px;background:linear-gradient(135deg,rgba(14,26,22,.74),rgba(26,107,90,.5)),url(${sunset_pool});background-size:cover;background-position:center;display:flex;flex-direction:column;justify-content:flex-end;padding:30px;color:var(--white);box-shadow:0 18px 52px rgba(14,26,22,.16);}
+  .memory-album-title{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;line-height:1;}
+  .memory-album-sub{font-size:13px;color:rgba(255,255,255,.68);font-weight:300;margin-top:8px;line-height:1.5;}
+  .photo-drop{border-style:solid !important;background:rgba(253,250,246,.78) !important;backdrop-filter:blur(10px);}
+
   @media(max-width:900px){
     .about{grid-template-columns:1fr;padding:60px 28px;gap:48px;}
     .home-weather-section{padding:36px 20px 18px;}
@@ -541,6 +600,9 @@ const css = `
     .year-stats{grid-template-columns:1fr 1fr;}
     .mini-stats{grid-template-columns:1fr 1fr;}
     .photo-drop{grid-template-columns:1fr;padding:28px;}
+    .calendar-hero-row,.memory-empty{grid-template-columns:1fr;}
+    .occupancy-row{grid-template-columns:54px 1fr 48px;gap:10px;}
+    .occ-detail{display:none;}
     .photo-empty-strip{grid-template-columns:1fr;}
   }
 `;
@@ -818,6 +880,19 @@ function WeatherCard(){
     </div>
   );
 }
+
+function CompactWeatherCard(){
+  const [weather,setWeather]=useState(null);
+  useEffect(()=>{
+    let alive=true;
+    fetch("https://api.open-meteo.com/v1/forecast?latitude=24.5551&longitude=-81.7800&current=temperature_2m,weathercode,windspeed_10m&temperature_unit=fahrenheit&timezone=America/New_York")
+      .then(r=>r.json()).then(d=>{if(alive)setWeather(d.current||null);}).catch(()=>{});
+    return()=>{alive=false;};
+  },[]);
+  if(!weather)return <div className="calendar-weather-card"><div><div className="calendar-weather-label">Key West</div><div className="calendar-weather-cond">Loading weather...</div></div><div className="calendar-weather-emoji">🌴</div></div>;
+  const [label,emoji]=weatherCodeLabel(weather.weathercode);
+  return <div className="calendar-weather-card"><div><div className="calendar-weather-label">Key West Today</div><div className="calendar-weather-temp">{Math.round(weather.temperature_2m)}°</div><div className="calendar-weather-cond">{label} · wind {Math.round(weather.windspeed_10m)} mph</div></div><div className="calendar-weather-emoji">{emoji}</div></div>;
+}
 function CalSidebar({bookings,isGuest}){
   const ts=todayStr();
   const now=new Date();
@@ -865,6 +940,7 @@ function YearView({bookings,user,isGuest,onSave,onDelete,showToast}){
   const [year,setYear]=useState(now.getFullYear());
   const [editB,setEditB]=useState(null);
   const [addModal,setAddModal]=useState(false);
+  const [view,setView]=useState("ribbon");
   const ts=todayStr();
   const visible=isGuest?bookings.filter(b=>b.visibility==="open"):bookings;
 
@@ -875,17 +951,47 @@ function YearView({bookings,user,isGuest,onSave,onDelete,showToast}){
   const bookedDays=countBookedDaysInYear(year,bookings,isGuest);
   const holidays=getUSHolidays(year);
   const nextStay=visible.filter(b=>b.endDate>=ts).sort((a,b)=>a.startDate.localeCompare(b.startDate))[0];
+  const currentStay=visible.find(b=>b.startDate<=ts&&b.endDate>=ts);
   const busiest=MONTHS.map((m,i)=>({m,booked:monthOpenDays(year,i,bookings,isGuest).booked})).sort((a,b)=>b.booked-a.booked)[0];
+
+  const monthSummary=(mi)=>{
+    const dim=daysInMonth(year,mi);
+    const days=new Set();
+    visible.forEach(b=>{
+      for(let d=1;d<=dim;d++){
+        const ds=dateStr(year,mi,d);
+        if(isInRange(ds,b.startDate,b.endDate)) days.add(ds);
+      }
+    });
+    const stays=visible.filter(b=>{
+      const first=dateStr(year,mi,1), last=dateStr(year,mi,dim);
+      return b.startDate<=last && b.endDate>=first;
+    });
+    const pct=Math.round((days.size/dim)*100);
+    return {dim,booked:days.size,pct,stays};
+  };
+
+  const segmentFor=(b,mi,dim)=>{
+    const startDay=Math.max(1,Number(b.startDate.slice(5,7))===mi+1&&Number(b.startDate.slice(0,4))===year?Number(b.startDate.slice(8,10)):1);
+    const endDay=Math.min(dim,Number(b.endDate.slice(5,7))===mi+1&&Number(b.endDate.slice(0,4))===year?Number(b.endDate.slice(8,10)):dim);
+    const left=((startDay-1)/dim)*100;
+    const width=Math.max(3,((endDay-startDay+1)/dim)*100);
+    return {left,width};
+  };
 
   return(
     <>
       <div className="year-header">
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <button className="btn-nav" onClick={()=>setYear(y=>y-1)}>‹</button>
-          <div className="cal-title">{year}</div>
+          <div className="cal-title">{year} Occupancy</div>
           <button className="btn-nav" onClick={()=>setYear(y=>y+1)}>›</button>
         </div>
         <div className="cal-controls">
+          <div className="view-toggle">
+            <button className={view==="ribbon"?"active":""} onClick={()=>setView("ribbon")}>Ribbon</button>
+            <button className={view==="heatmap"?"active":""} onClick={()=>setView("heatmap")}>Grid</button>
+          </div>
           <div className="year-legend">
             <div className="legend-item"><div className="legend-dot" style={{background:"rgba(155,123,168,0.5)",border:"2px solid #9B7BA8"}}/>Family</div>
             <div className="legend-item"><div className="legend-dot" style={{background:"rgba(46,155,127,0.5)",border:"2px solid #2E9B7F"}}/>Open</div>
@@ -894,13 +1000,41 @@ function YearView({bookings,user,isGuest,onSave,onDelete,showToast}){
           {!isGuest&&user&&<button className="btn-add" onClick={()=>setAddModal(true)}>+ Add Stay</button>}
         </div>
       </div>
+      <div className="calendar-hero-row">
+        <div className="house-status-card">
+          <div className="house-status-label">House Status</div>
+          <div className="house-status-main"><span className={`status-dot-live ${currentStay?"":"open"}`}/>{currentStay?"House occupied":"House available"}</div>
+          <div className="house-status-sub">{currentStay?`${currentStay.name} is home · ${fmt(currentStay.startDate)} — ${fmt(currentStay.endDate)}`:nextStay?`Next arrival: ${nextStay.name} · ${fmt(nextStay.startDate)}`:"No upcoming stays on the books."}</div>
+        </div>
+        <CompactWeatherCard/>
+      </div>
       <div className="year-stats">
         <div className="year-stat-card"><div className="year-stat-k">Booked this year</div><div className="year-stat-v">{bookedDays} days</div><div className="year-stat-sub">Across family + open stays</div></div>
         <div className="year-stat-card"><div className="year-stat-k">US holidays</div><div className="year-stat-v">{holidays.length}</div><div className="year-stat-sub">Marked on the calendar</div></div>
         <div className="year-stat-card"><div className="year-stat-k">Next stay</div><div className="year-stat-v">{nextStay?fmt(nextStay.startDate):"Open"}</div><div className="year-stat-sub">{nextStay?nextStay.name:"No upcoming stays"}</div></div>
         <div className="year-stat-card"><div className="year-stat-k">Busiest month</div><div className="year-stat-v">{busiest?.booked?busiest.m:"—"}</div><div className="year-stat-sub">{busiest?.booked||0} booked days</div></div>
       </div>
-      <div className="page-sheet" key={year}>
+      <div className="page-sheet" key={`${year}-${view}`}>
+        {view==="ribbon"?(
+          <div className="occupancy-board">
+            {MONTHS.map((m,mi)=>{
+              const summary=monthSummary(mi);
+              const monthHolidays=holidays.filter(h=>Number(h.date.slice(5,7))===mi+1);
+              return(
+                <div key={m} className="occupancy-row">
+                  <div className="occ-month">{m}</div>
+                  <div className="occ-track">
+                    <div className="occ-fill" style={{width:`${summary.pct}%`}}/>
+                    {summary.stays.map((b,i)=>{const seg=segmentFor(b,mi,summary.dim);return <button key={`${b.id}-${i}`} className="occ-segment" style={{left:`${seg.left}%`,width:`${seg.width}%`,"--member-color":b.color||DEFAULT_COLOR}} onClick={()=>setEditB(b)} title={`${b.name} · ${fmt(b.startDate)} — ${fmt(b.endDate)}`}/>;})}
+                    {monthHolidays.map(h=>{const day=Number(h.date.slice(8,10));return <span key={h.date} className="occ-holiday" style={{left:`${((day-.5)/summary.dim)*100}%`}} title={h.name}/>;})}
+                  </div>
+                  <div className="occ-percent">{summary.pct}%</div>
+                  <div className="occ-detail">{summary.stays.length?summary.stays.map(b=>`${b.name}: ${fmt(b.startDate)}–${fmt(b.endDate)}`).join(" · "):"Open month"}</div>
+                </div>
+              );
+            })}
+          </div>
+        ):(
         <div className="year-grid">
           {Array.from({length:12},(_,mi)=>{
             const dim=daysInMonth(year,mi);
@@ -935,6 +1069,7 @@ function YearView({bookings,user,isGuest,onSave,onDelete,showToast}){
             );
           })}
         </div>
+        )}
       </div>
       {(addModal||editB)&&(
         <BookingModal booking={editB} user={user}
@@ -981,6 +1116,14 @@ function MonthView({bookings,user,isGuest,onSave,onDelete,showToast}){
           <button className="btn-nav" onClick={next}>›</button>
         </div>
         {!isGuest&&user&&<button className="btn-add" onClick={()=>setAddModal(true)}>+ Add Stay</button>}
+      </div>
+      <div className="calendar-hero-row">
+        <div className="house-status-card">
+          <div className="house-status-label">House Status</div>
+          <div className="house-status-main"><span className={`status-dot-live ${nextStay?"":"open"}`}/>{nextStay?"Next arrival set":"Open calendar"}</div>
+          <div className="house-status-sub">{nextStay?`${nextStay.name} arrives ${fmt(nextStay.startDate)} · ${fmt(nextStay.startDate)} — ${fmt(nextStay.endDate)}`:"No upcoming stays on the books."}</div>
+        </div>
+        <CompactWeatherCard/>
       </div>
       <div className="year-stats">
         <div className="year-stat-card"><div className="year-stat-k">Open days</div><div className="year-stat-v">{mo.open}</div><div className="year-stat-sub">Available this month</div></div>
@@ -1139,18 +1282,26 @@ function FamilyPhotosView(){
   };
   return(
     <div className="photos-wrap">
-      <div className="section-title">Family Photos</div>
-      <div className="section-sub">A quiet place for house memories. This first version previews uploads in the browser only; we can make it save permanently when you are ready for backend storage.</div>
-      <div className="photo-drop">
-        <div>
-          <div className="photo-drop-title">Add moments from the house.</div>
-          <div className="photo-drop-text">Pool afternoons, birthday weekends, sunset dinners, porch photos — this can become the family album for Casa Kallman.</div>
+      <div className="memory-hero">
+        <div className="section-title">Family Memories</div>
+        <div className="section-sub">A quiet house album for Casa Kallman. Uploads preview here for now; permanent shared storage can be added later without changing the look.</div>
+        <div className="memory-empty">
+          <div className="memory-album-card">
+            <div className="memory-album-title">No memories added yet.</div>
+            <div className="memory-album-sub">The first sunset dinner, pool afternoon, porch photo, or family weekend can live here.</div>
+          </div>
+          <div className="photo-drop">
+            <div>
+              <div className="photo-drop-title">Add the first memory.</div>
+              <div className="photo-drop-text">Select photos from this computer to preview a polished memory wall for the family.</div>
+            </div>
+            <label className="photo-upload-btn">Upload Photos<input type="file" accept="image/*" multiple onChange={onPick}/></label>
+          </div>
         </div>
-        <label className="photo-upload-btn">Upload Photos<input type="file" accept="image/*" multiple onChange={onPick}/></label>
       </div>
       {photos.length?(
-        <div className="photo-preview-grid">
-          {photos.map((p,i)=><div className="photo-preview" key={p.id}><img src={p.url} alt={p.name}/><span>Photo {i+1}</span></div>)}
+        <div className="photo-preview-grid" style={{marginTop:24}}>
+          {photos.map((p,i)=><div className="photo-preview" key={p.id}><img src={p.url} alt={p.name}/><span>Memory {i+1}</span></div>)}
         </div>
       ):(
         <div className="photo-empty-strip">
