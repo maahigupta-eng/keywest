@@ -25,21 +25,24 @@ function hashPassword(password, salt) {
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers, body: "" };
 
-  const store = getStore({ name: "beach-house-users", consistency: "strong" });
-
   try {
     const { name, password } = JSON.parse(event.body || "{}");
     if (!name || !password) return { statusCode: 400, headers, body: JSON.stringify({ error: "Name and password required" }) };
 
-    const userKey = name.trim().toLowerCase().replace(/\s+/g, "_");
+    const store = getStore({
+      name: "beach-house-users",
+      siteID: process.env.NETLIFY_SITE_ID,
+      token: process.env.NETLIFY_TOKEN,
+    });
 
+    const userKey = name.trim().toLowerCase().replace(/\s+/g, "_");
     let user = null;
     try { user = await store.get(userKey, { type: "json" }); } catch {}
     if (!user) return { statusCode: 401, headers, body: JSON.stringify({ error: "No account found. Create one first." }) };
     const { hash } = hashPassword(password, user.salt);
     if (hash !== user.hash) return { statusCode: 401, headers, body: JSON.stringify({ error: "Wrong password." }) };
-    const token = signToken({ userKey, name: user.name, isAdmin: user.isAdmin });
-    return { statusCode: 200, headers, body: JSON.stringify({ token, user: { name: user.name, isAdmin: user.isAdmin } }) };
+    const token = signToken({ userKey, name: user.name, isAdmin: user.isAdmin, color: user.color });
+    return { statusCode: 200, headers, body: JSON.stringify({ token, user: { name: user.name, isAdmin: user.isAdmin, color: user.color } }) };
 
   } catch (err) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: "Server error: " + err.message }) };
