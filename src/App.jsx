@@ -264,8 +264,12 @@ const css = `
 
   /* ── AUTH ── */
   .auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 18% 22%,rgba(91,191,163,0.18),transparent 34%),radial-gradient(circle at 82% 64%,rgba(232,137,74,0.10),transparent 30%),linear-gradient(135deg,#F4FBF8 0%,var(--seafoam-pale) 46%,#F8F1E6 100%);position:relative;overflow:hidden;}
-  .auth-screen::before{content:'🌴';position:absolute;left:-54px;bottom:-92px;font-size:250px;opacity:0.055;transform:rotate(-16deg);}
+  .auth-screen::before{content:'🌴';position:absolute;left:-58px;bottom:-96px;font-size:300px;opacity:0.11;transform:rotate(-16deg);filter:saturate(0.75);}
   .auth-screen::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,0.08) 0 2px,transparent 2px 32px);opacity:0.55;pointer-events:none;}
+  .auth-palm{position:absolute;z-index:1;pointer-events:none;font-size:230px;line-height:1;opacity:0.13;filter:saturate(0.65);}
+  .auth-palm.top{right:-40px;top:-58px;transform:rotate(22deg);}
+  .auth-palm.mid{right:8%;bottom:9%;font-size:92px;opacity:0.08;transform:rotate(-8deg);}
+  .auth-glow{position:absolute;inset:auto 16% 6% auto;width:360px;height:360px;border-radius:50%;background:rgba(232,137,74,0.14);filter:blur(32px);z-index:1;pointer-events:none;}
   /* floating sea-glass dots */
   .auth-bubble{position:absolute;border-radius:50%;background:rgba(46,155,127,0.055);animation:floatUp linear infinite;}
   @keyframes floatUp{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:1}90%{opacity:0.5}100%{transform:translateY(-20vh) scale(1);opacity:0}}
@@ -494,6 +498,22 @@ const css = `
   .year-stat-v{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--teal);font-weight:400;line-height:1.05;}
   .year-stat-sub{font-size:11px;color:var(--mid);font-weight:300;margin-top:5px;}
 
+
+  /* ── FAMILY PHOTO DROP ── */
+  .photos-wrap{padding:32px;max-width:1080px;width:100%;position:relative;}
+  .photo-drop{margin-top:22px;border:1.5px dashed rgba(26,107,90,0.32);border-radius:28px;background:linear-gradient(135deg,rgba(253,250,246,0.9),rgba(238,248,245,0.82));padding:42px;display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center;box-shadow:0 18px 52px rgba(14,26,22,0.07);position:relative;overflow:hidden;}
+  .photo-drop::after{content:'🌴';position:absolute;right:32px;bottom:-34px;font-size:132px;opacity:0.055;pointer-events:none;}
+  .photo-drop-title{font-family:'Cormorant Garamond',serif;font-size:34px;color:var(--teal);font-weight:300;line-height:1.05;margin-bottom:10px;}
+  .photo-drop-text{font-size:15px;color:var(--mid);font-weight:300;line-height:1.7;max-width:560px;}
+  .photo-upload-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;padding:15px 28px;border-radius:999px;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:var(--white);font-size:12px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;box-shadow:0 10px 28px rgba(46,155,127,0.22);white-space:nowrap;}
+  .photo-upload-btn input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+  .photo-preview-grid{margin-top:22px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;}
+  .photo-preview{aspect-ratio:4/3;border-radius:18px;overflow:hidden;background:var(--white);border:1px solid var(--sand-mid);box-shadow:0 12px 28px rgba(14,26,22,0.07);position:relative;}
+  .photo-preview img{width:100%;height:100%;object-fit:cover;display:block;}
+  .photo-preview span{position:absolute;left:10px;bottom:10px;background:rgba(14,26,22,0.58);color:white;border-radius:999px;padding:4px 10px;font-size:10px;letter-spacing:1px;text-transform:uppercase;backdrop-filter:blur(8px);}
+  .photo-empty-strip{margin-top:22px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .photo-empty-card{height:150px;border-radius:20px;background:rgba(253,250,246,0.65);border:1px solid rgba(200,184,152,0.42);display:flex;align-items:center;justify-content:center;color:rgba(26,107,90,0.22);font-size:34px;}
+
   @media(max-width:900px){
     .about{grid-template-columns:1fr;padding:60px 28px;gap:48px;}
     .home-weather-section{padding:36px 20px 18px;}
@@ -520,6 +540,8 @@ const css = `
     .hero-top{padding:20px 24px;}
     .year-stats{grid-template-columns:1fr 1fr;}
     .mini-stats{grid-template-columns:1fr 1fr;}
+    .photo-drop{grid-template-columns:1fr;padding:28px;}
+    .photo-empty-strip{grid-template-columns:1fr;}
   }
 `;
 
@@ -560,8 +582,8 @@ function EstatePage({onFamilyAccess,onRequestStay}){
           <div className="home-share-card">
             <div>
               <div className="home-share-kicker">For family and friends</div>
-              <div className="home-share-title">Plan the next stay without the group-chat chaos.</div>
-              <div className="home-share-text">Check the calendar, see who is at the house, and send stay requests from one quiet, private Casa Kallman page.</div>
+              <div className="home-share-title">Where every visit starts.</div>
+              <div className="home-share-text">Check availability, request dates, and see who's home.</div>
             </div>
             <div className="home-share-actions">
               <button className="btn-share-home" onClick={()=>navigator.clipboard?.writeText(window.location.href).then(()=>alert("Link copied."))}>Copy Link</button>
@@ -685,6 +707,9 @@ function AuthScreen({onBack,onSuccess}){
 
   return(
     <div className="auth-screen">
+      <div className="auth-glow"/>
+      <div className="auth-palm top">🌴</div>
+      <div className="auth-palm mid">🌴</div>
       {bubbles.map(b=>(
         <div key={b.id} className="auth-bubble" style={{width:b.size,height:b.size,left:`${b.left}%`,animationDuration:`${b.duration}s`,animationDelay:`${b.delay}s`}}/>
       ))}
@@ -1057,7 +1082,8 @@ function WhosThereView({bookings,isGuest}){
 function FamilyProfilesView({bookings,isGuest}){
   const ts=todayStr();
   const visible=isGuest?bookings.filter(b=>b.visibility==="open"):bookings;
-  const members=[...new Map(visible.map(b=>[b.name,{name:b.name,color:b.color||DEFAULT_COLOR}])).values()].sort((a,b)=>a.name.localeCompare(b.name));
+  const derived=[...new Map(visible.map(b=>[b.name,{name:b.name,color:b.color||DEFAULT_COLOR}])).values()].filter(m=>m.name?.toLowerCase()!=="maahi");
+  const members=(derived.length?derived:[{name:"Jake",color:DEFAULT_COLOR}]).sort((a,b)=>a.name.localeCompare(b.name));
   const thisYear=new Date().getFullYear();
   const countDays=(arr)=>{
     const set=new Set();
@@ -1101,6 +1127,42 @@ function FamilyProfilesView({bookings,isGuest}){
   );
 }
 
+
+// ── FAMILY PHOTOS ────────────────────────────────────────────────────────────
+function FamilyPhotosView(){
+  const [photos,setPhotos]=useState([]);
+  const onPick=(e)=>{
+    const files=Array.from(e.target.files||[]).slice(0,12);
+    const next=files.map((file,i)=>({id:`${Date.now()}-${i}`,name:file.name,url:URL.createObjectURL(file)}));
+    setPhotos(p=>[...next,...p].slice(0,18));
+    e.target.value="";
+  };
+  return(
+    <div className="photos-wrap">
+      <div className="section-title">Family Photos</div>
+      <div className="section-sub">A quiet place for house memories. This first version previews uploads in the browser only; we can make it save permanently when you are ready for backend storage.</div>
+      <div className="photo-drop">
+        <div>
+          <div className="photo-drop-title">Add moments from the house.</div>
+          <div className="photo-drop-text">Pool afternoons, birthday weekends, sunset dinners, porch photos — this can become the family album for Casa Kallman.</div>
+        </div>
+        <label className="photo-upload-btn">Upload Photos<input type="file" accept="image/*" multiple onChange={onPick}/></label>
+      </div>
+      {photos.length?(
+        <div className="photo-preview-grid">
+          {photos.map((p,i)=><div className="photo-preview" key={p.id}><img src={p.url} alt={p.name}/><span>Photo {i+1}</span></div>)}
+        </div>
+      ):(
+        <div className="photo-empty-strip">
+          <div className="photo-empty-card">☀</div>
+          <div className="photo-empty-card">🌊</div>
+          <div className="photo-empty-card">🌴</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── REQUESTS ──────────────────────────────────────────────────────────────────
 function RequestsView({showToast}){
   const [requests,setRequests]=useState([]);
@@ -1138,10 +1200,10 @@ function RequestsView({showToast}){
 function FamilyApp({user,bookings,onSave,onDelete,showToast,isGuest,onGoHome}){
   const [tab,setTab]=useState("month");
   const tabs=isGuest
-    ?[{id:"year",label:"Year"},{id:"month",label:"Month"},{id:"whos",label:"Who's There"},{id:"family",label:"Family"}]
+    ?[{id:"year",label:"Year"},{id:"month",label:"Month"},{id:"whos",label:"Who's There"},{id:"family",label:"Family"},{id:"photos",label:"Photos"}]
     :user?.isAdmin
-      ?[{id:"year",label:"Year"},{id:"month",label:"Month"},{id:"whos",label:"Who's There"},{id:"family",label:"Family"},{id:"requests",label:"Requests"}]
-      :[{id:"year",label:"Year"},{id:"month",label:"Month"},{id:"whos",label:"Who's There"},{id:"family",label:"Family"}];
+      ?[{id:"year",label:"Year"},{id:"month",label:"Month"},{id:"whos",label:"Who's There"},{id:"family",label:"Family"},{id:"photos",label:"Photos"},{id:"requests",label:"Requests"}]
+      :[{id:"year",label:"Year"},{id:"month",label:"Month"},{id:"whos",label:"Who's There"},{id:"family",label:"Family"},{id:"photos",label:"Photos"}];
 
   const signOut=()=>{localStorage.removeItem("bh_token");localStorage.removeItem("bh_user");sessionStorage.removeItem("bh_passkey_ok");window.location.reload();};
   const showSidebar=tab==="year"||tab==="month";
@@ -1177,6 +1239,7 @@ function FamilyApp({user,bookings,onSave,onDelete,showToast,isGuest,onGoHome}){
         <>
           {tab==="whos"&&<WhosThereView bookings={bookings} isGuest={isGuest}/>}
           {tab==="family"&&<FamilyProfilesView bookings={bookings} isGuest={isGuest}/>}
+          {tab==="photos"&&<FamilyPhotosView/>}
           {tab==="requests"&&user?.isAdmin&&<RequestsView showToast={showToast}/>}
         </>
       )}
