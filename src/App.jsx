@@ -381,8 +381,14 @@ const css = `
   .month-cell.today-cell{border-color:var(--teal-mid);}
   /* subtle palm watermark on empty cells */
   .month-cell.is-empty::after{content:'🌴';position:absolute;bottom:4px;right:6px;font-size:18px;opacity:0.06;pointer-events:none;}
-  .month-date-num{font-size:13px;font-weight:400;color:var(--mid);margin-bottom:5px;}
+  .month-date-row{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:5px;position:relative;z-index:2;}
+  .month-date-num{font-size:13px;font-weight:400;color:var(--mid);}
+  .mobile-day-name{display:none;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--light);}
   .today-cell .month-date-num{color:var(--white);background:var(--teal-mid);width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;}
+  .day-weather{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:6px;padding-top:5px;font-size:10px;color:var(--light);position:relative;z-index:2;}
+  .day-weather-emoji{font-size:13px;line-height:1;}
+  .day-weather-temp{white-space:nowrap;font-weight:400;color:var(--mid);}
+  .forecast-note{font-size:11px;color:var(--light);font-weight:300;margin:-8px 0 10px;text-align:right;}
 
   /* pill-style booking bars */
   .booking-pill{
@@ -604,6 +610,78 @@ const css = `
     .occupancy-row{grid-template-columns:54px 1fr 48px;gap:10px;}
     .occ-detail{display:none;}
     .photo-empty-strip{grid-template-columns:1fr;}
+    .hero-title{font-size:clamp(62px,18vw,96px);}
+    .hero-sub{font-size:18px;margin-bottom:34px;}
+    .hero-pills{gap:7px;margin-bottom:30px;}
+    .hero-pill{font-size:9px;padding:7px 12px;}
+    .btn-cta-primary{padding:14px 30px;}
+    .app-shell{background:linear-gradient(140deg,#f5efe3 0%,#eef8f5 55%,#f9efe2 100%);}
+    .app-header{height:auto;min-height:58px;padding-top:10px;padding-bottom:10px;align-items:flex-start;gap:10px;}
+    .app-brand{flex-direction:column;gap:3px;align-items:flex-start;}
+    .app-header-right{gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+    .app-user-dot{width:24px;height:24px;font-size:11px;}
+    .btn-home,.btn-signout{padding:6px 10px;font-size:10px;}
+    .app-nav{overflow-x:auto;gap:4px;scrollbar-width:none;}
+    .app-nav::-webkit-scrollbar{display:none;}
+    .app-tab{flex:0 0 auto;padding:13px 14px;font-size:10px;}
+    .cal-title{font-size:32px;}
+    .month-header,.year-header{align-items:flex-start;}
+    .calendar-hero-row{gap:12px;}
+    .house-status-card,.calendar-weather-card{border-radius:20px;padding:16px 18px;}
+    .calendar-weather-temp{font-size:38px;}
+    .year-stats{gap:10px;}
+    .year-stat-card{padding:14px;border-radius:18px;}
+    .year-stat-v{font-size:24px;}
+    .page-sheet{padding:12px;border-radius:22px;overflow:hidden;}
+    .month-grid-header{display:none;}
+    .month-grid{display:flex;flex-direction:column;gap:8px;}
+    .month-cell{min-height:0;border-radius:16px;padding:12px 13px;background:rgba(253,250,246,0.92);border:1px solid rgba(232,220,200,0.9);box-shadow:0 8px 22px rgba(14,26,22,0.05);}
+    .month-cell.other-month{display:none;}
+    .month-date-row{margin-bottom:8px;}
+    .mobile-day-name{display:block;}
+    .booking-pill{font-size:12px;padding:6px 10px;max-width:100%;}
+    .holiday-chip{align-self:flex-start;margin-top:2px;}
+    .day-weather{margin-top:8px;border-top:1px solid rgba(232,220,200,0.65);padding-top:8px;font-size:11px;}
+    .day-weather-emoji{font-size:16px;}
+    .forecast-note{text-align:left;margin:0 0 10px;font-size:10px;}
+    .year-grid{overflow-x:auto;border-radius:20px;padding:10px;}
+    .year-row{min-width:760px;grid-template-columns:44px repeat(31,20px);}
+    .year-cell{height:28px;border-radius:6px;}
+    .year-label{font-size:13px;}
+    .occupancy-board{padding:18px;border-radius:24px;}
+    .occupancy-row{padding:13px 0;}
+    .occ-month{font-size:17px;}
+    .memory-hero{padding:28px;border-radius:26px;}
+    .memory-album-card{min-height:230px;border-radius:24px;}
+    .modal{padding:26px;width:92%;max-height:88vh;overflow:auto;}
+  }
+
+  @media(max-width:520px){
+    .hero-top{padding:16px 16px;}
+    .hero-logo{font-size:17px;}
+    .btn-req-small{padding:8px 12px;font-size:9px;letter-spacing:1.3px;}
+    .hero-content{padding:0 20px;}
+    .hero-title{letter-spacing:-1.5px;}
+    .home-weather-grid .weather-temp{font-size:44px;}
+    .estate-footer{flex-direction:column;gap:8px;text-align:center;}
+    .auth-screen{padding:16px;}
+    .auth-right{padding:34px 24px;}
+    .auth-title{font-size:34px;}
+    .cal-main-area{padding:14px;}
+    .cal-title{font-size:28px;}
+    .btn-nav{width:30px;height:30px;}
+    .month-nav{gap:8px;}
+    .year-stats{grid-template-columns:1fr;}
+    .calendar-weather-card{align-items:flex-start;}
+    .calendar-weather-emoji{font-size:28px;}
+    .whos-wrap,.req-wrap-app,.family-wrap,.photos-wrap{padding:20px 14px;}
+    .whos-card{padding:16px;align-items:flex-start;}
+    .whos-av{width:38px;height:38px;}
+    .req-card{padding:18px;}
+    .req-top{gap:10px;}
+    .modal-actions{flex-wrap:wrap;}
+    .btn-remove{width:100%;margin-right:0;}
+    .btn-cancel,.btn-save{flex:1;}
   }
 `;
 
@@ -893,6 +971,32 @@ function CompactWeatherCard(){
   const [label,emoji]=weatherCodeLabel(weather.weathercode);
   return <div className="calendar-weather-card"><div><div className="calendar-weather-label">Key West Today</div><div className="calendar-weather-temp">{Math.round(weather.temperature_2m)}°</div><div className="calendar-weather-cond">{label} · wind {Math.round(weather.windspeed_10m)} mph</div></div><div className="calendar-weather-emoji">{emoji}</div></div>;
 }
+
+function useDailyForecast(){
+  const [daily,setDaily]=useState({});
+  useEffect(()=>{
+    let alive=true;
+    fetch("https://api.open-meteo.com/v1/forecast?latitude=24.5551&longitude=-81.7800&current=temperature_2m,weathercode,windspeed_10m&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&timezone=America/New_York&forecast_days=16")
+      .then(r=>r.json())
+      .then(d=>{
+        if(!alive||!d.daily?.time)return;
+        const next={};
+        d.daily.time.forEach((date,i)=>{
+          const [label,emoji]=weatherCodeLabel(d.daily.weathercode?.[i]);
+          next[date]={
+            label,
+            emoji,
+            high:Math.round(d.daily.temperature_2m_max?.[i] ?? 0),
+            low:Math.round(d.daily.temperature_2m_min?.[i] ?? 0),
+            rain:d.daily.precipitation_probability_max?.[i]
+          };
+        });
+        setDaily(next);
+      }).catch(()=>{});
+    return()=>{alive=false;};
+  },[]);
+  return daily;
+}
 function CalSidebar({bookings,isGuest}){
   const ts=todayStr();
   const now=new Date();
@@ -1091,6 +1195,7 @@ function MonthView({bookings,user,isGuest,onSave,onDelete,showToast}){
   const [addModal,setAddModal]=useState(false);
   const ts=todayStr();
   const visible=isGuest?bookings.filter(b=>b.visibility==="open"):bookings;
+  const dailyForecast=useDailyForecast();
 
   const firstDay=new Date(year,month,1).getDay();
   const dim=daysInMonth(year,month);
@@ -1131,6 +1236,7 @@ function MonthView({bookings,user,isGuest,onSave,onDelete,showToast}){
         <div className="year-stat-card"><div className="year-stat-k">Holidays</div><div className="year-stat-v">{monthHolidays.length}</div><div className="year-stat-sub">{monthHolidays.map(h=>h.name).slice(0,2).join(" · ")||"None this month"}</div></div>
         <div className="year-stat-card"><div className="year-stat-k">Next arrival</div><div className="year-stat-v">{nextStay?fmt(nextStay.startDate):"Open"}</div><div className="year-stat-sub">{nextStay?nextStay.name:"No upcoming stays"}</div></div>
       </div>
+      <div className="forecast-note">Daily weather appears for the live Key West forecast window.</div>
       <div className="page-sheet" key={`${year}-${month}`}>
       <div className="month-grid-header">{DAY_NAMES.map(d=><div key={d} className="month-day-label">{d}</div>)}</div>
       <div className="month-grid">
@@ -1140,9 +1246,11 @@ function MonthView({bookings,user,isGuest,onSave,onDelete,showToast}){
           const isEmpty=cell.current&&bs.length===0;
           const ds=cell.current?dateStr(year,month,cell.day):null;
           const holiday=ds?getHolidayByDate(ds):null;
+          const dayWeather=ds?dailyForecast[ds]:null;
+          const weekday=ds?DAY_NAMES[new Date(ds+"T12:00:00").getDay()]:"";
           return(
             <div key={i} className={`month-cell ${!cell.current?"other-month":""} ${isToday?"today-cell":""} ${isEmpty?"is-empty":""}`}>
-              <div className="month-date-num">{cell.day}</div>
+              <div className="month-date-row"><div className="month-date-num">{cell.day}</div><div className="mobile-day-name">{weekday}</div></div>
               {bs.slice(0,3).map(b=>(
                 <div key={b.id} className="booking-pill" style={{background:b.color||DEFAULT_COLOR}} onClick={()=>setDetailB(b)} title={b.name}>
                   {b.name}{b.note?` · ${b.note}`:""}
@@ -1150,6 +1258,7 @@ function MonthView({bookings,user,isGuest,onSave,onDelete,showToast}){
               ))}
               {bs.length>3&&<div className="more-chip">+{bs.length-3} more</div>}
               {holiday&&<div className="holiday-chip">✦ {holiday.name}</div>}
+              {dayWeather&&<div className="day-weather" title={`${dayWeather.label} · high ${dayWeather.high}° / low ${dayWeather.low}°${dayWeather.rain!=null?` · ${dayWeather.rain}% rain`:""}`}><span className="day-weather-emoji">{dayWeather.emoji}</span><span className="day-weather-temp">{dayWeather.high}°/{dayWeather.low}°</span></div>}
             </div>
           );
         })}
