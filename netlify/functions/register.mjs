@@ -34,9 +34,13 @@ export const handler = async (event) => {
       return { statusCode: 401, headers, body: JSON.stringify({ error: "Incorrect family passkey." }) };
     }
 
-    const store = getStore("beach-house-users");
-    const userKey = name.trim().toLowerCase().replace(/\s+/g, "_");
+    const store = getStore({
+      name: "beach-house-users",
+      siteID: process.env.NETLIFY_SITE_ID,
+      token: process.env.NETLIFY_TOKEN,
+    });
 
+    const userKey = name.trim().toLowerCase().replace(/\s+/g, "_");
     let existing = null;
     try { existing = await store.get(userKey, { type: "json" }); } catch {}
     if (existing) return { statusCode: 409, headers, body: JSON.stringify({ error: "Name already taken. Try logging in." }) };
