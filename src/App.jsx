@@ -238,6 +238,30 @@ const css = `
   .footer-brand{font-family:'Cormorant Garamond',serif;font-size:18px;color:rgba(255,255,255,0.3);font-weight:300;}
   .footer-loc{font-size:11px;color:rgba(255,255,255,0.2);letter-spacing:2px;text-transform:uppercase;font-weight:300;}
 
+
+
+  /* ── HOME WEATHER / SHARE STRIP ── */
+  .home-weather-section{position:relative;background:linear-gradient(180deg,var(--sand) 0%,var(--white) 100%);padding:54px 56px 34px;overflow:hidden;}
+  .home-weather-section::before{content:'';position:absolute;left:-100px;top:-120px;width:360px;height:360px;border-radius:50%;background:rgba(91,191,163,0.14);filter:blur(12px);}
+  .home-weather-section::after{content:'☀';position:absolute;right:7%;top:20px;font-size:104px;color:rgba(232,137,74,0.08);font-family:'Cormorant Garamond',serif;}
+  .home-weather-grid{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:0.78fr 1.22fr;gap:18px;align-items:stretch;position:relative;z-index:2;}
+  .home-weather-grid .status-card{margin:0;background:rgba(253,250,246,0.92);border-color:rgba(200,184,152,0.46);padding:22px 24px;border-radius:24px;box-shadow:0 18px 52px rgba(14,26,22,0.08);}
+  .home-weather-grid .weather-temp{font-size:52px;}
+  .home-weather-grid .weather-emoji{font-size:36px;}
+  .home-share-card{background:linear-gradient(135deg,rgba(14,26,22,0.94),rgba(26,107,90,0.88));border:1px solid rgba(255,255,255,0.12);border-radius:24px;padding:24px 28px;color:var(--white);box-shadow:0 22px 60px rgba(14,26,22,0.16);display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;position:relative;overflow:hidden;}
+  .home-share-card::after{content:'🌴';position:absolute;right:18px;bottom:-34px;font-size:96px;opacity:0.055;transform:rotate(-10deg);}
+  .home-share-kicker{font-size:10px;letter-spacing:2.7px;text-transform:uppercase;color:rgba(184,228,226,0.78);margin-bottom:8px;}
+  .home-share-title{font-family:'Cormorant Garamond',serif;font-size:34px;line-height:1.05;font-weight:300;margin-bottom:8px;}
+  .home-share-text{font-size:14px;line-height:1.65;color:rgba(255,255,255,0.62);font-weight:300;max-width:560px;}
+  .home-share-actions{display:flex;gap:10px;align-items:center;position:relative;z-index:2;}
+  .btn-share-home{font-family:'Jost',sans-serif;font-size:11px;font-weight:400;letter-spacing:1.6px;text-transform:uppercase;border:none;border-radius:999px;padding:13px 19px;cursor:pointer;transition:all .22s;background:var(--white);color:var(--teal);box-shadow:0 10px 26px rgba(0,0,0,0.12);white-space:nowrap;}
+  .btn-share-home:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(0,0,0,0.18);}
+  .btn-share-secondary{background:rgba(255,255,255,0.10);color:var(--white);border:1px solid rgba(255,255,255,0.18);box-shadow:none;}
+
+  .gallery-section::after{content:'';position:absolute;left:-130px;bottom:60px;width:320px;height:320px;border-radius:50%;background:rgba(232,137,74,0.08);filter:blur(14px);}
+  .g-cell::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(14,26,22,0.34) 100%);pointer-events:none;opacity:.85;}
+  .g-label{z-index:2;}
+
   /* ── AUTH ── */
   .auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 18% 22%,rgba(91,191,163,0.18),transparent 34%),radial-gradient(circle at 82% 64%,rgba(232,137,74,0.10),transparent 30%),linear-gradient(135deg,#F4FBF8 0%,var(--seafoam-pale) 46%,#F8F1E6 100%);position:relative;overflow:hidden;}
   .auth-screen::before{content:'🌴';position:absolute;left:-54px;bottom:-92px;font-size:250px;opacity:0.055;transform:rotate(-16deg);}
@@ -472,6 +496,10 @@ const css = `
 
   @media(max-width:900px){
     .about{grid-template-columns:1fr;padding:60px 28px;gap:48px;}
+    .home-weather-section{padding:36px 20px 18px;}
+    .home-weather-grid{grid-template-columns:1fr;}
+    .home-share-card{grid-template-columns:1fr;padding:22px;}
+    .home-share-actions{flex-wrap:wrap;}
     .gallery-section{padding:54px 22px 64px;}
     .gallery{grid-template-columns:1fr;grid-template-rows:280px 190px 190px 190px 190px 190px 190px;height:auto;gap:12px;}
     .g-main,.g-wide{grid-row:auto;grid-column:auto;}
@@ -524,6 +552,23 @@ function EstatePage({onFamilyAccess,onRequestStay}){
           <button className="btn-cta-primary" onClick={onFamilyAccess}>Family Access →</button>
         </div>
         <div className="hero-scroll"><span>Gallery</span><span>↓</span></div>
+      </section>
+
+      <section className="home-weather-section">
+        <div className="home-weather-grid">
+          <WeatherCard/>
+          <div className="home-share-card">
+            <div>
+              <div className="home-share-kicker">For family and friends</div>
+              <div className="home-share-title">Plan the next stay without the group-chat chaos.</div>
+              <div className="home-share-text">Check the calendar, see who is at the house, and send stay requests from one quiet, private Casa Kallman page.</div>
+            </div>
+            <div className="home-share-actions">
+              <button className="btn-share-home" onClick={()=>navigator.clipboard?.writeText(window.location.href).then(()=>alert("Link copied."))}>Copy Link</button>
+              <button className="btn-share-home btn-share-secondary" onClick={onRequestStay}>Request Stay</button>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Gallery */}
