@@ -26,7 +26,7 @@ export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers, body: "" };
 
   try {
-    const { name, password, familyPasskey } = JSON.parse(event.body || "{}");
+    const { name, password, familyPasskey, color } = JSON.parse(event.body || "{}");
     if (!name || !password) return { statusCode: 400, headers, body: JSON.stringify({ error: "Name and password required" }) };
 
     const familyPK = (process.env.FAMILY_PASSKEY || "keywest2025").trim().toLowerCase();
@@ -49,10 +49,11 @@ export const handler = async (event) => {
     let allKeys = { blobs: [] };
     try { allKeys = await store.list(); } catch {}
     const isAdmin = allKeys.blobs.length === 0;
-    const user = { name: name.trim(), userKey, hash, salt, isAdmin, createdAt: new Date().toISOString() };
+    const userColor = color || "#2E9B8F";
+    const user = { name: name.trim(), userKey, hash, salt, isAdmin, color: userColor, createdAt: new Date().toISOString() };
     await store.setJSON(userKey, user);
-    const token = signToken({ userKey, name: user.name, isAdmin });
-    return { statusCode: 200, headers, body: JSON.stringify({ token, user: { name: user.name, isAdmin } }) };
+    const token = signToken({ userKey, name: user.name, isAdmin, color: userColor });
+    return { statusCode: 200, headers, body: JSON.stringify({ token, user: { name: user.name, isAdmin, color: userColor } }) };
 
   } catch (err) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: "Server error: " + err.message }) };
