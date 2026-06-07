@@ -35,6 +35,81 @@ const isInRange = (ds,s,e) => ds>=s&&ds<=e;
 const daysInMonth = (y,m) => new Date(y,m+1,0).getDate();
 const todayStr = () => { const n=new Date(); return dateStr(n.getFullYear(),n.getMonth(),n.getDate()); };
 
+
+const nthWeekday = (year, month, weekday, nth) => {
+  const first = new Date(year, month, 1);
+  const offset = (weekday - first.getDay() + 7) % 7;
+  return 1 + offset + (nth - 1) * 7;
+};
+const lastWeekday = (year, month, weekday) => {
+  const last = new Date(year, month + 1, 0);
+  return last.getDate() - ((last.getDay() - weekday + 7) % 7);
+};
+const easterDate = (year) => {
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31) - 1;
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return { month, day };
+};
+const holidayObj = (year, month, day, name, tone="federal") => ({ date:dateStr(year,month,day), name, tone });
+const getUSHolidays = (year) => {
+  const e = easterDate(year);
+  return [
+    holidayObj(year,0,1,"New Year's Day"),
+    holidayObj(year,0,nthWeekday(year,0,1,3),"MLK Day"),
+    holidayObj(year,1,14,"Valentine's Day","social"),
+    holidayObj(year,1,nthWeekday(year,1,1,3),"Presidents' Day"),
+    holidayObj(year,e.month,e.day,"Easter","social"),
+    holidayObj(year,4,nthWeekday(year,4,0,2),"Mother's Day","social"),
+    holidayObj(year,4,lastWeekday(year,4,1),"Memorial Day"),
+    holidayObj(year,5,19,"Juneteenth"),
+    holidayObj(year,5,nthWeekday(year,5,0,3),"Father's Day","social"),
+    holidayObj(year,6,4,"Independence Day"),
+    holidayObj(year,8,nthWeekday(year,8,1,1),"Labor Day"),
+    holidayObj(year,9,nthWeekday(year,9,1,2),"Indigenous Peoples' Day"),
+    holidayObj(year,9,31,"Halloween","social"),
+    holidayObj(year,10,11,"Veterans Day"),
+    holidayObj(year,10,nthWeekday(year,10,4,4),"Thanksgiving"),
+    holidayObj(year,11,25,"Christmas Day"),
+  ];
+};
+const getHolidayByDate = (ds) => {
+  const y = Number(ds.slice(0,4));
+  return getUSHolidays(y).find(h=>h.date===ds) || null;
+};
+const monthOpenDays = (year, month, bookings, isGuest=false) => {
+  const visible=isGuest?bookings.filter(b=>b.visibility==="open"):bookings;
+  let open=0, booked=0;
+  for(let d=1; d<=daysInMonth(year,month); d++){
+    const ds=dateStr(year,month,d);
+    if(visible.some(b=>isInRange(ds,b.startDate,b.endDate))) booked++; else open++;
+  }
+  return {open, booked};
+};
+const countBookedDaysInYear = (year, bookings, isGuest=false) => {
+  const visible=isGuest?bookings.filter(b=>b.visibility==="open"):bookings;
+  const set=new Set();
+  visible.forEach(b=>{
+    const start=new Date(b.startDate+"T12:00:00");
+    const end=new Date(b.endDate+"T12:00:00");
+    for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+      if(d.getFullYear()===year)set.add(dateStr(d.getFullYear(),d.getMonth(),d.getDate()));
+    }
+  });
+  return set.size;
+};
+
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,600&family=Jost:wght@200;300;400;500&display=swap');
 
@@ -352,6 +427,49 @@ const css = `
   .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--teal);color:var(--white);padding:12px 28px;border-radius:50px;font-size:13px;z-index:2000;transition:transform 0.3s ease;pointer-events:none;white-space:nowrap;font-family:'Jost',sans-serif;}
   .toast.show{transform:translateX(-50%) translateY(0);}
 
+
+
+  /* ── HOUSE STATUS / WEATHER / PAGE TURN ── */
+  .cal-main-area{background:
+    radial-gradient(circle at 18% 12%, rgba(91,191,163,0.14), transparent 28%),
+    radial-gradient(circle at 82% 0%, rgba(232,137,74,0.15), transparent 32%),
+    linear-gradient(180deg, rgba(253,250,246,0.55), rgba(245,239,227,0.96));}
+  .cal-main-area::after{content:'🌴';position:fixed;left:-34px;bottom:42px;font-size:210px;opacity:0.035;transform:rotate(-12deg);pointer-events:none;filter:grayscale(1);}
+  .page-sheet{animation:pageTurn 0.42s ease both;transform-origin:left center;perspective:1200px;}
+  @keyframes pageTurn{0%{opacity:0;transform:rotateY(-6deg) translateX(14px);filter:blur(1px)}100%{opacity:1;transform:rotateY(0) translateX(0);filter:blur(0)}}
+  .status-card{background:rgba(253,250,246,0.78);border:1px solid var(--sand-mid);border-radius:18px;padding:16px;margin-bottom:16px;box-shadow:0 10px 30px rgba(14,26,22,0.05);}
+  .weather-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;}
+  .weather-temp{font-family:'Cormorant Garamond',serif;font-size:40px;line-height:0.9;color:var(--teal);font-weight:400;}
+  .weather-emoji{font-size:28px;line-height:1;}
+  .weather-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--light);margin-bottom:8px;}
+  .weather-cond{font-size:13px;color:var(--mid);font-weight:300;line-height:1.45;}
+  .weather-note{margin-top:10px;padding:8px 10px;border-radius:12px;background:rgba(91,191,163,0.1);font-size:12px;color:var(--teal);font-weight:300;line-height:1.45;}
+  .mini-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 18px;}
+  .mini-stat{background:rgba(253,250,246,0.65);border:1px solid var(--sand-mid);border-radius:16px;padding:13px 14px;}
+  .mini-num{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--teal);line-height:1;font-weight:400;}
+  .mini-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--light);margin-top:5px;}
+  .holiday-chip{display:inline-flex;align-items:center;gap:5px;margin-top:auto;align-self:flex-start;font-size:9px;letter-spacing:0.7px;text-transform:uppercase;color:#A65A23;background:rgba(232,137,74,0.12);border:1px solid rgba(232,137,74,0.22);padding:3px 7px;border-radius:20px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .holiday-dot{position:absolute;right:4px;bottom:4px;width:7px;height:7px;border-radius:50%;background:var(--sunset);box-shadow:0 0 0 3px rgba(232,137,74,0.13);}
+  .holiday-dot.social{background:var(--teal-light);box-shadow:0 0 0 3px rgba(91,191,163,0.14);}
+  .holiday-mini{font-size:8px;color:rgba(14,26,22,0.45);position:absolute;bottom:3px;left:50%;transform:translateX(-50%);}
+  .family-wrap{padding:32px;max-width:1040px;width:100%;position:relative;}
+  .family-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;}
+  .family-card{background:rgba(253,250,246,0.82);border:1px solid var(--sand-mid);border-radius:20px;padding:22px;box-shadow:0 16px 40px rgba(14,26,22,0.06);position:relative;overflow:hidden;}
+  .family-card::after{content:' ';position:absolute;right:-28px;top:-28px;width:90px;height:90px;border-radius:50%;background:var(--member-color);opacity:0.08;}
+  .family-head{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+  .family-avatar{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:500;font-size:18px;box-shadow:0 8px 22px rgba(14,26,22,0.12);}
+  .family-name{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--teal);line-height:1;font-weight:400;}
+  .family-meta{font-size:11px;color:var(--light);letter-spacing:1px;text-transform:uppercase;margin-top:4px;}
+  .family-row{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--sand-mid);padding:11px 0;font-size:13px;color:var(--mid);font-weight:300;}
+  .family-row strong{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--teal);font-weight:400;}
+  .family-next{margin-top:10px;background:var(--seafoam-pale);border-radius:14px;padding:12px;font-size:13px;color:var(--mid);font-weight:300;line-height:1.45;}
+  .family-note{font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--teal);font-size:16px;margin-top:12px;}
+  .year-stats{display:grid;grid-template-columns:repeat(4,minmax(140px,1fr));gap:12px;margin-bottom:22px;}
+  .year-stat-card{background:rgba(253,250,246,0.72);border:1px solid var(--sand-mid);border-radius:18px;padding:16px;box-shadow:0 12px 30px rgba(14,26,22,0.04);}
+  .year-stat-k{font-size:10px;letter-spacing:1.7px;text-transform:uppercase;color:var(--light);margin-bottom:8px;}
+  .year-stat-v{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--teal);font-weight:400;line-height:1.05;}
+  .year-stat-sub{font-size:11px;color:var(--mid);font-weight:300;margin-top:5px;}
+
   @media(max-width:900px){
     .about{grid-template-columns:1fr;padding:60px 28px;gap:48px;}
     .gallery-section{padding:54px 22px 64px;}
@@ -372,6 +490,8 @@ const css = `
     .form-row{grid-template-columns:1fr;}
     .photo-grid-sm{grid-template-columns:1fr;}
     .hero-top{padding:20px 24px;}
+    .year-stats{grid-template-columns:1fr 1fr;}
+    .mini-stats{grid-template-columns:1fr 1fr;}
   }
 `;
 
@@ -602,14 +722,48 @@ function BookingModal({booking,user,onClose,onSave,onDelete}){
 }
 
 // ── SIDEBAR ───────────────────────────────────────────────────────────────────
+function weatherCodeLabel(code){
+  const map={0:["Clear","☀️"],1:["Mostly clear","🌤️"],2:["Partly cloudy","⛅"],3:["Cloudy","☁️"],45:["Foggy","🌫️"],48:["Foggy","🌫️"],51:["Light drizzle","🌦️"],53:["Drizzle","🌦️"],55:["Heavy drizzle","🌧️"],61:["Light rain","🌦️"],63:["Rain","🌧️"],65:["Heavy rain","🌧️"],80:["Rain showers","🌦️"],81:["Rain showers","🌧️"],82:["Heavy showers","⛈️"],95:["Thunderstorms","⛈️"]};
+  return map[code]||["Key West weather","🌴"];
+}
+function WeatherCard(){
+  const [weather,setWeather]=useState(null);
+  useEffect(()=>{
+    let alive=true;
+    fetch("https://api.open-meteo.com/v1/forecast?latitude=24.5551&longitude=-81.7800&current=temperature_2m,weathercode,windspeed_10m&temperature_unit=fahrenheit&timezone=America/New_York")
+      .then(r=>r.json()).then(d=>{if(alive)setWeather(d.current||null);}).catch(()=>{});
+    return()=>{alive=false;};
+  },[]);
+  if(!weather)return <div className="status-card"><div className="weather-label">Key West Weather</div><div className="weather-cond">Loading island weather...</div></div>;
+  const [label,emoji]=weatherCodeLabel(weather.weathercode);
+  const temp=Math.round(weather.temperature_2m);
+  const wind=Math.round(weather.windspeed_10m);
+  const note=temp>=82?"Warm pool weather. Keep an eye on afternoon showers.":temp>=72?"Comfortable island weather for the porch and pool.":"A cooler Keys day — good for the veranda.";
+  return(
+    <div className="status-card">
+      <div className="weather-label">Key West Weather</div>
+      <div className="weather-top"><div className="weather-temp">{temp}°</div><div className="weather-emoji">{emoji}</div></div>
+      <div className="weather-cond">{label} · wind {wind} mph</div>
+      <div className="weather-note">{note}</div>
+    </div>
+  );
+}
 function CalSidebar({bookings,isGuest}){
   const ts=todayStr();
+  const now=new Date();
   const visible=isGuest?bookings.filter(b=>b.visibility==="open"):bookings;
   const upcoming=visible.filter(b=>b.endDate>=ts).sort((a,b)=>a.startDate.localeCompare(b.startDate)).slice(0,8);
+  const next=upcoming[0];
+  const mo=monthOpenDays(now.getFullYear(),now.getMonth(),bookings,isGuest);
   return(
     <div className="cal-sidebar">
+      <WeatherCard/>
+      <div className="mini-stats">
+        <div className="mini-stat"><div className="mini-num">{mo.open}</div><div className="mini-label">Open days</div></div>
+        <div className="mini-stat"><div className="mini-num">{mo.booked}</div><div className="mini-label">Booked days</div></div>
+      </div>
       <div className="sidebar-title">At the House</div>
-      <div className="sidebar-sub">Upcoming stays</div>
+      <div className="sidebar-sub">{next?`Next arrival: ${fmt(next.startDate)}`:"Upcoming stays"}</div>
       {upcoming.length===0?(
         <div className="sidebar-empty">
           <div className="sidebar-palm">🌴</div>
@@ -648,6 +802,10 @@ function YearView({bookings,user,isGuest,onSave,onDelete,showToast}){
     const ds=dateStr(y,m,d);
     return visible.filter(b=>isInRange(ds,b.startDate,b.endDate));
   };
+  const bookedDays=countBookedDaysInYear(year,bookings,isGuest);
+  const holidays=getUSHolidays(year);
+  const nextStay=visible.filter(b=>b.endDate>=ts).sort((a,b)=>a.startDate.localeCompare(b.startDate))[0];
+  const busiest=MONTHS.map((m,i)=>({m,booked:monthOpenDays(year,i,bookings,isGuest).booked})).sort((a,b)=>b.booked-a.booked)[0];
 
   return(
     <>
@@ -661,40 +819,52 @@ function YearView({bookings,user,isGuest,onSave,onDelete,showToast}){
           <div className="year-legend">
             <div className="legend-item"><div className="legend-dot" style={{background:"rgba(155,123,168,0.5)",border:"2px solid #9B7BA8"}}/>Family</div>
             <div className="legend-item"><div className="legend-dot" style={{background:"rgba(46,155,127,0.5)",border:"2px solid #2E9B7F"}}/>Open</div>
+            <div className="legend-item"><div className="legend-dot" style={{background:"var(--sunset)",border:"2px solid rgba(232,137,74,0.2)",borderRadius:"50%"}}/>US holidays</div>
           </div>
           {!isGuest&&user&&<button className="btn-add" onClick={()=>setAddModal(true)}>+ Add Stay</button>}
         </div>
       </div>
-      <div className="year-grid">
-        {Array.from({length:12},(_,mi)=>{
-          const dim=daysInMonth(year,mi);
-          return(
-            <div key={mi} className="year-row">
-              <div className="year-label">{MONTHS[mi]}</div>
-              {Array.from({length:31},(_,di)=>{
-                if(di>=dim)return<div key={di} className="year-cell empty"/>;
-                const d=di+1;const ds=dateStr(year,mi,d);
-                const bs=getDay(year,mi,d);
-                const isToday=ds===ts;
-                const bg=bs.length>0
-                  ?bs.length===1?bs[0].color||DEFAULT_COLOR
-                  :`linear-gradient(135deg,${bs.map(b=>b.color||DEFAULT_COLOR).join(",")})`
-                  :undefined;
-                const names=bs.map(b=>b.name).join(", ");
-                return(
-                  <div key={di} className={`year-cell ${isToday?"is-today":""} ${bs.length?"":""}`}
-                    style={bg?{background:bg}:{}}
-                    onClick={()=>bs.length&&setEditB(bs[0])}
-                    title={names}>
-                    {bs.length===1&&<span style={{fontSize:9,fontWeight:600,color:"rgba(255,255,255,0.9)",letterSpacing:0,lineHeight:1}}>{bs[0].name?.[0]?.toUpperCase()}</span>}
-                    {bs.length>1&&<span style={{fontSize:8,fontWeight:600,color:"rgba(255,255,255,0.9)"}}>{bs.length}</span>}
-                    {names&&<div className="cell-tip">{names}</div>}
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
+      <div className="year-stats">
+        <div className="year-stat-card"><div className="year-stat-k">Booked this year</div><div className="year-stat-v">{bookedDays} days</div><div className="year-stat-sub">Across family + open stays</div></div>
+        <div className="year-stat-card"><div className="year-stat-k">US holidays</div><div className="year-stat-v">{holidays.length}</div><div className="year-stat-sub">Marked on the calendar</div></div>
+        <div className="year-stat-card"><div className="year-stat-k">Next stay</div><div className="year-stat-v">{nextStay?fmt(nextStay.startDate):"Open"}</div><div className="year-stat-sub">{nextStay?nextStay.name:"No upcoming stays"}</div></div>
+        <div className="year-stat-card"><div className="year-stat-k">Busiest month</div><div className="year-stat-v">{busiest?.booked?busiest.m:"—"}</div><div className="year-stat-sub">{busiest?.booked||0} booked days</div></div>
+      </div>
+      <div className="page-sheet" key={year}>
+        <div className="year-grid">
+          {Array.from({length:12},(_,mi)=>{
+            const dim=daysInMonth(year,mi);
+            return(
+              <div key={mi} className="year-row">
+                <div className="year-label">{MONTHS[mi]}</div>
+                {Array.from({length:31},(_,di)=>{
+                  if(di>=dim)return<div key={di} className="year-cell empty"/>;
+                  const d=di+1;const ds=dateStr(year,mi,d);
+                  const bs=getDay(year,mi,d);
+                  const holiday=getHolidayByDate(ds);
+                  const isToday=ds===ts;
+                  const bg=bs.length>0
+                    ?bs.length===1?bs[0].color||DEFAULT_COLOR
+                    :`linear-gradient(135deg,${bs.map(b=>b.color||DEFAULT_COLOR).join(",")})`
+                    :undefined;
+                  const names=[...bs.map(b=>b.name), ...(holiday?[holiday.name]:[])].join(" · ");
+                  return(
+                    <div key={di} className={`year-cell ${isToday?"is-today":""}`}
+                      style={bg?{background:bg}: {}}
+                      onClick={()=>bs.length&&setEditB(bs[0])}
+                      title={names}>
+                      {bs.length===1&&<span style={{fontSize:9,fontWeight:600,color:"rgba(255,255,255,0.9)",letterSpacing:0,lineHeight:1}}>{bs[0].name?.[0]?.toUpperCase()}</span>}
+                      {bs.length>1&&<span style={{fontSize:8,fontWeight:600,color:"rgba(255,255,255,0.9)"}}>{bs.length}</span>}
+                      {!bs.length&&holiday&&<span className="holiday-mini">✦</span>}
+                      {holiday&&<span className={`holiday-dot ${holiday.tone==="social"?"social":""}`}/>}                    
+                      {names&&<div className="cell-tip">{names}</div>}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
       </div>
       {(addModal||editB)&&(
         <BookingModal booking={editB} user={user}
@@ -728,6 +898,9 @@ function MonthView({bookings,user,isGuest,onSave,onDelete,showToast}){
   const bForDay=(d,c)=>{if(!c)return[];const ds=dateStr(year,month,d);return visible.filter(b=>isInRange(ds,b.startDate,b.endDate));};
   const prev=()=>{if(month===0){setMonth(11);setYear(y=>y-1);}else setMonth(m=>m-1);};
   const next=()=>{if(month===11){setMonth(0);setYear(y=>y+1);}else setMonth(m=>m+1);};
+  const mo=monthOpenDays(year,month,bookings,isGuest);
+  const monthHolidays=getUSHolidays(year).filter(h=>Number(h.date.slice(5,7))===month+1);
+  const nextStay=visible.filter(b=>b.endDate>=ts).sort((a,b)=>a.startDate.localeCompare(b.startDate))[0];
 
   return(
     <>
@@ -739,12 +912,21 @@ function MonthView({bookings,user,isGuest,onSave,onDelete,showToast}){
         </div>
         {!isGuest&&user&&<button className="btn-add" onClick={()=>setAddModal(true)}>+ Add Stay</button>}
       </div>
+      <div className="year-stats">
+        <div className="year-stat-card"><div className="year-stat-k">Open days</div><div className="year-stat-v">{mo.open}</div><div className="year-stat-sub">Available this month</div></div>
+        <div className="year-stat-card"><div className="year-stat-k">Booked days</div><div className="year-stat-v">{mo.booked}</div><div className="year-stat-sub">Family + open stays</div></div>
+        <div className="year-stat-card"><div className="year-stat-k">Holidays</div><div className="year-stat-v">{monthHolidays.length}</div><div className="year-stat-sub">{monthHolidays.map(h=>h.name).slice(0,2).join(" · ")||"None this month"}</div></div>
+        <div className="year-stat-card"><div className="year-stat-k">Next arrival</div><div className="year-stat-v">{nextStay?fmt(nextStay.startDate):"Open"}</div><div className="year-stat-sub">{nextStay?nextStay.name:"No upcoming stays"}</div></div>
+      </div>
+      <div className="page-sheet" key={`${year}-${month}`}>
       <div className="month-grid-header">{DAY_NAMES.map(d=><div key={d} className="month-day-label">{d}</div>)}</div>
       <div className="month-grid">
         {cells.map((cell,i)=>{
           const bs=bForDay(cell.day,cell.current);
           const isToday=cell.current&&dateStr(year,month,cell.day)===ts;
           const isEmpty=cell.current&&bs.length===0;
+          const ds=cell.current?dateStr(year,month,cell.day):null;
+          const holiday=ds?getHolidayByDate(ds):null;
           return(
             <div key={i} className={`month-cell ${!cell.current?"other-month":""} ${isToday?"today-cell":""} ${isEmpty?"is-empty":""}`}>
               <div className="month-date-num">{cell.day}</div>
@@ -754,9 +936,11 @@ function MonthView({bookings,user,isGuest,onSave,onDelete,showToast}){
                 </div>
               ))}
               {bs.length>3&&<div className="more-chip">+{bs.length-3} more</div>}
+              {holiday&&<div className="holiday-chip">✦ {holiday.name}</div>}
             </div>
           );
         })}
+      </div>
       </div>
       {detailB&&(
         <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&setDetailB(null)}>
@@ -823,6 +1007,55 @@ function WhosThereView({bookings,isGuest}){
   );
 }
 
+
+// ── FAMILY PROFILES ──────────────────────────────────────────────────────────
+function FamilyProfilesView({bookings,isGuest}){
+  const ts=todayStr();
+  const visible=isGuest?bookings.filter(b=>b.visibility==="open"):bookings;
+  const members=[...new Map(visible.map(b=>[b.name,{name:b.name,color:b.color||DEFAULT_COLOR}])).values()].sort((a,b)=>a.name.localeCompare(b.name));
+  const thisYear=new Date().getFullYear();
+  const countDays=(arr)=>{
+    const set=new Set();
+    arr.forEach(b=>{
+      const start=new Date(b.startDate+"T12:00:00"), end=new Date(b.endDate+"T12:00:00");
+      for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+        if(d.getFullYear()===thisYear)set.add(dateStr(d.getFullYear(),d.getMonth(),d.getDate()));
+      }
+    });
+    return set.size;
+  };
+  return(
+    <div className="family-wrap">
+      <div className="section-title">Family Profiles</div>
+      <div className="section-sub">A simple view of who uses the house and when. This uses existing booking data only.</div>
+      {members.length===0?(
+        <div className="empty-state"><div className="empty-icon">🌴</div><div className="empty-title">No profiles yet</div><div className="empty-sub">Add a stay and family profiles will appear automatically.</div></div>
+      ):(
+        <div className="family-grid">
+          {members.map(m=>{
+            const mine=visible.filter(b=>b.name===m.name).sort((a,b)=>a.startDate.localeCompare(b.startDate));
+            const upcoming=mine.filter(b=>b.endDate>=ts);
+            const next=upcoming[0];
+            return(
+              <div key={m.name} className="family-card" style={{"--member-color":m.color}}>
+                <div className="family-head">
+                  <div className="family-avatar" style={{background:m.color}}>{m.name?.[0]?.toUpperCase()}</div>
+                  <div><div className="family-name">{m.name}</div><div className="family-meta">Casa Kallman</div></div>
+                </div>
+                <div className="family-row"><span>Upcoming stays</span><strong>{upcoming.length}</strong></div>
+                <div className="family-row"><span>Days booked this year</span><strong>{countDays(mine)}</strong></div>
+                <div className="family-row"><span>Total stays logged</span><strong>{mine.length}</strong></div>
+                <div className="family-next">{next?<>Next stay: <strong>{fmt(next.startDate)} — {fmt(next.endDate)}</strong>{next.note?` · ${next.note}`:""}</>:"No upcoming stay yet."}</div>
+                <div className="family-note">Favorite spot: add later</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── REQUESTS ──────────────────────────────────────────────────────────────────
 function RequestsView({showToast}){
   const [requests,setRequests]=useState([]);
@@ -860,10 +1093,10 @@ function RequestsView({showToast}){
 function FamilyApp({user,bookings,onSave,onDelete,showToast,isGuest,onGoHome}){
   const [tab,setTab]=useState("month");
   const tabs=isGuest
-    ?[{id:"year",label:"Year"},{id:"month",label:"Month"},{id:"whos",label:"Who's There"}]
+    ?[{id:"year",label:"Year"},{id:"month",label:"Month"},{id:"whos",label:"Who's There"},{id:"family",label:"Family"}]
     :user?.isAdmin
-      ?[{id:"year",label:"Year"},{id:"month",label:"Month"},{id:"whos",label:"Who's There"},{id:"requests",label:"Requests"}]
-      :[{id:"year",label:"Year"},{id:"month",label:"Month"},{id:"whos",label:"Who's There"}];
+      ?[{id:"year",label:"Year"},{id:"month",label:"Month"},{id:"whos",label:"Who's There"},{id:"family",label:"Family"},{id:"requests",label:"Requests"}]
+      :[{id:"year",label:"Year"},{id:"month",label:"Month"},{id:"whos",label:"Who's There"},{id:"family",label:"Family"}];
 
   const signOut=()=>{localStorage.removeItem("bh_token");localStorage.removeItem("bh_user");sessionStorage.removeItem("bh_passkey_ok");window.location.reload();};
   const showSidebar=tab==="year"||tab==="month";
@@ -898,6 +1131,7 @@ function FamilyApp({user,bookings,onSave,onDelete,showToast,isGuest,onGoHome}){
       ):(
         <>
           {tab==="whos"&&<WhosThereView bookings={bookings} isGuest={isGuest}/>}
+          {tab==="family"&&<FamilyProfilesView bookings={bookings} isGuest={isGuest}/>}
           {tab==="requests"&&user?.isAdmin&&<RequestsView showToast={showToast}/>}
         </>
       )}
