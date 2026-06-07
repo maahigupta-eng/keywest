@@ -66,8 +66,8 @@ const css = `
 
   .hero-top{position:absolute;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:28px 40px;}
   .hero-logo{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:rgba(255,255,255,0.85);letter-spacing:1px;}
-  .btn-req-small{font-family:'Jost',sans-serif;font-size:11px;font-weight:300;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.6);background:none;border:1px solid rgba(255,255,255,0.2);border-radius:50px;padding:9px 20px;cursor:pointer;transition:all 0.25s;text-decoration:none;}
-  .btn-req-small:hover{color:white;border-color:rgba(255,255,255,0.4);}
+  .btn-req-small{font-family:'Jost',sans-serif;font-size:11px;font-weight:400;letter-spacing:2px;text-transform:uppercase;color:var(--white);background:linear-gradient(135deg,rgba(46,155,127,0.72),rgba(91,191,163,0.72));border:1px solid rgba(255,255,255,0.34);border-radius:50px;padding:10px 22px;cursor:pointer;transition:all 0.25s;text-decoration:none;box-shadow:0 10px 26px rgba(14,26,22,0.18);backdrop-filter:blur(12px);}
+  .btn-req-small:hover{transform:translateY(-2px);background:linear-gradient(135deg,var(--teal-mid),var(--teal-light));border-color:rgba(255,255,255,0.56);box-shadow:0 14px 34px rgba(46,155,127,0.32);}
   .btn-family{
     font-family:'Jost',sans-serif;font-size:12px;font-weight:400;letter-spacing:2px;
     text-transform:uppercase;color:var(--white);
@@ -97,12 +97,18 @@ const css = `
   @keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
 
   /* ── GALLERY ── */
-  .gallery{display:grid;grid-template-columns:1.5fr 1fr 1fr;grid-template-rows:340px 260px;gap:4px;}
-  .g-cell{overflow:hidden;position:relative;}
-  .g-cell img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.7s ease;}
-  .g-cell:hover img{transform:scale(1.05);}
+  .gallery-section{background:linear-gradient(180deg,var(--white) 0%,var(--sand) 100%);padding:82px 56px 96px;position:relative;overflow:hidden;}
+  .gallery-section::before{content:'';position:absolute;right:-120px;top:50px;width:360px;height:360px;border-radius:50%;background:rgba(91,191,163,0.10);filter:blur(10px);}
+  .gallery-kicker{font-size:10px;font-weight:400;letter-spacing:3px;text-transform:uppercase;color:var(--teal-mid);text-align:center;margin-bottom:12px;}
+  .gallery-title{font-family:'Cormorant Garamond',serif;font-size:clamp(42px,5vw,68px);font-weight:300;color:var(--teal);text-align:center;line-height:1;margin-bottom:12px;}
+  .gallery-sub{max-width:620px;margin:0 auto 42px;text-align:center;color:var(--mid);font-size:15px;line-height:1.8;font-weight:300;}
+  .gallery{max-width:1220px;margin:0 auto;display:grid;grid-template-columns:1.25fr 0.85fr 0.85fr;grid-template-rows:300px 250px 210px;gap:16px;position:relative;z-index:2;}
+  .g-cell{overflow:hidden;position:relative;border-radius:22px;box-shadow:0 18px 50px rgba(14,26,22,0.12);background:var(--sand-mid);}
+  .g-cell img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.8s ease,filter 0.8s ease;}
+  .g-cell:hover img{transform:scale(1.055);filter:saturate(1.05);}
   .g-main{grid-row:1/3;}
-  .g-label{position:absolute;bottom:14px;left:14px;font-size:10px;font-weight:300;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.8);background:rgba(14,26,22,0.55);padding:5px 12px;border-radius:50px;backdrop-filter:blur(8px);}
+  .g-wide{grid-column:2/4;}
+  .g-label{position:absolute;bottom:16px;left:16px;font-size:10px;font-weight:400;letter-spacing:2px;text-transform:uppercase;color:var(--white);background:rgba(14,26,22,0.50);padding:7px 14px;border-radius:50px;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.18);}
 
   /* ── ABOUT ── */
   .about{display:grid;grid-template-columns:1fr 1fr;gap:80px;padding:100px 80px;max-width:1400px;margin:0 auto;align-items:start;}
@@ -121,6 +127,19 @@ const css = `
   .photo-sm:hover img{transform:scale(1.05);}
 
   /* ── REQUEST ── */
+  .request-page{min-height:100vh;background:radial-gradient(circle at 18% 18%,rgba(91,191,163,0.18),transparent 32%),linear-gradient(135deg,var(--ink) 0%,#123A32 46%,var(--sand) 46%,var(--white) 100%);padding:34px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+  .request-page::before{content:'🌴';position:absolute;left:-30px;bottom:-65px;font-size:210px;opacity:0.055;transform:rotate(-18deg);}
+  .request-page::after{content:'';position:absolute;right:-120px;top:-120px;width:340px;height:340px;border-radius:50%;background:rgba(232,137,74,0.14);filter:blur(8px);}
+  .request-card{width:min(1040px,96vw);min-height:640px;background:rgba(253,250,246,0.96);border-radius:28px;display:grid;grid-template-columns:0.88fr 1.12fr;overflow:hidden;box-shadow:0 28px 90px rgba(14,26,22,0.28);position:relative;z-index:2;}
+  .request-photo{position:relative;min-height:520px;}
+  .request-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+  .request-photo::after{content:'';position:absolute;inset:0;background:linear-gradient(160deg,rgba(14,60,50,0.24),rgba(14,26,22,0.68));}
+  .request-photo-copy{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:space-between;padding:38px;color:var(--white);}
+  .request-photo-title{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;line-height:1;}
+  .request-photo-text{font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;font-weight:300;color:rgba(255,255,255,0.72);line-height:1.5;}
+  .request-form-panel{padding:46px 52px;display:flex;flex-direction:column;justify-content:center;}
+  .request-back{align-self:flex-start;background:none;border:none;color:var(--light);font-family:'Jost',sans-serif;font-size:12px;letter-spacing:1px;cursor:pointer;margin-bottom:28px;}
+  .request-back:hover{color:var(--teal);}
   .request-section{background:var(--ink);padding:100px 80px;}
   .req-inner{max-width:680px;margin:0 auto;}
   .req-tag{font-size:10px;font-weight:300;letter-spacing:3px;text-transform:uppercase;color:var(--teal-light);margin-bottom:18px;}
@@ -145,9 +164,11 @@ const css = `
   .footer-loc{font-size:11px;color:rgba(255,255,255,0.2);letter-spacing:2px;text-transform:uppercase;font-weight:300;}
 
   /* ── AUTH ── */
-  .auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--seafoam-pale);position:relative;overflow:hidden;}
-  /* floating bubbles */
-  .auth-bubble{position:absolute;border-radius:50%;background:rgba(46,155,127,0.08);animation:floatUp linear infinite;}
+  .auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 18% 22%,rgba(91,191,163,0.18),transparent 34%),radial-gradient(circle at 82% 64%,rgba(232,137,74,0.10),transparent 30%),linear-gradient(135deg,#F4FBF8 0%,var(--seafoam-pale) 46%,#F8F1E6 100%);position:relative;overflow:hidden;}
+  .auth-screen::before{content:'🌴';position:absolute;left:-54px;bottom:-92px;font-size:250px;opacity:0.055;transform:rotate(-16deg);}
+  .auth-screen::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,0.08) 0 2px,transparent 2px 32px);opacity:0.55;pointer-events:none;}
+  /* floating sea-glass dots */
+  .auth-bubble{position:absolute;border-radius:50%;background:rgba(46,155,127,0.055);animation:floatUp linear infinite;}
   @keyframes floatUp{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:1}90%{opacity:0.5}100%{transform:translateY(-20vh) scale(1);opacity:0}}
 
   .auth-wrap{display:grid;grid-template-columns:1fr 1fr;max-width:920px;width:95%;min-height:580px;border-radius:22px;overflow:hidden;box-shadow:0 24px 80px rgba(14,26,22,0.15);position:relative;z-index:10;}
@@ -178,7 +199,8 @@ const css = `
   .err{color:#c0392b;font-size:13px;margin-bottom:10px;font-weight:300;}
 
   /* ── APP SHELL ── */
-  .app-shell{min-height:100vh;display:flex;flex-direction:column;background:var(--sand);}
+  .app-shell{min-height:100vh;display:flex;flex-direction:column;background:radial-gradient(circle at 12% 18%,rgba(91,191,163,0.11),transparent 28%),radial-gradient(circle at 88% 82%,rgba(232,137,74,0.10),transparent 28%),linear-gradient(180deg,#F7F1E6 0%,var(--sand) 62%,#EFE5D3 100%);position:relative;}
+  .app-shell::before{content:'🌴';position:fixed;left:-44px;bottom:-72px;font-size:210px;opacity:0.035;transform:rotate(-15deg);pointer-events:none;z-index:0;}
   .app-header{background:var(--ink);padding:0 32px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
   .app-brand{display:flex;align-items:baseline;gap:10px;}
   .app-brand-name{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:400;color:var(--white);cursor:pointer;}
@@ -196,9 +218,10 @@ const css = `
   .app-tab:hover:not(.active){color:rgba(255,255,255,0.7);}
 
   /* ── CALENDAR LAYOUT WITH SIDEBAR ── */
-  .cal-layout{display:grid;grid-template-columns:1fr 280px;gap:0;flex:1;}
-  .cal-main-area{padding:32px;overflow:auto;}
-  .cal-sidebar{background:var(--white);border-left:1px solid var(--sand-mid);padding:28px 24px;overflow-y:auto;}
+  .cal-layout{display:grid;grid-template-columns:1fr 280px;gap:0;flex:1;position:relative;z-index:1;}
+  .cal-main-area{padding:32px;overflow:auto;position:relative;}
+  .cal-main-area::before{content:'';position:fixed;right:300px;top:118px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,0.22);filter:blur(2px);pointer-events:none;}
+  .cal-sidebar{background:rgba(253,250,246,0.86);backdrop-filter:blur(10px);border-left:1px solid var(--sand-mid);padding:28px 24px;overflow-y:auto;position:relative;z-index:2;box-shadow:-18px 0 50px rgba(14,26,22,0.05);}
   .sidebar-title{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--teal);margin-bottom:4px;font-weight:400;}
   .sidebar-sub{font-size:11px;color:var(--light);margin-bottom:20px;font-weight:300;letter-spacing:0.5px;}
   .sidebar-empty{text-align:center;padding:32px 0;}
@@ -223,11 +246,12 @@ const css = `
   .btn-nav:hover{background:var(--teal);color:var(--white);border-color:var(--teal);}
   .btn-add{padding:9px 20px;background:var(--sunset);color:var(--white);border:none;border-radius:10px;font-size:11px;font-weight:400;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Jost',sans-serif;transition:all 0.2s;}
   .btn-add:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(232,137,74,0.3);}
-  .year-grid{display:flex;flex-direction:column;gap:2px;background:var(--sand-mid);padding:4px;border-radius:14px;}
-  .year-row{display:grid;grid-template-columns:44px repeat(31,1fr);gap:2px;align-items:center;}
-  .year-label{font-size:10px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--mid);text-align:right;padding-right:12px;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;}
-  .year-cell{height:32px;border-radius:5px;background:rgba(255,255,255,0.85);cursor:pointer;position:relative;transition:transform 0.1s,box-shadow 0.1s;display:flex;align-items:center;justify-content:center;}
-  .year-cell:hover{transform:scale(1.25);z-index:2;box-shadow:0 2px 8px rgba(0,0,0,0.15);}
+  .year-grid{display:flex;flex-direction:column;gap:3px;background:linear-gradient(135deg,rgba(232,220,200,0.82),rgba(245,239,227,0.92));padding:14px;border-radius:24px;box-shadow:0 18px 50px rgba(14,26,22,0.10);border:1px solid rgba(200,184,152,0.55);position:relative;overflow:hidden;}
+  .year-grid::before{content:'Annual booking board';position:absolute;right:18px;bottom:12px;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;color:rgba(14,26,22,0.10);pointer-events:none;}
+  .year-row{display:grid;grid-template-columns:52px repeat(31,1fr);gap:3px;align-items:center;position:relative;z-index:1;}
+  .year-label{font-weight:500;letter-spacing:1.2px;text-transform:uppercase;color:var(--teal);text-align:right;padding-right:12px;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;}
+  .year-cell{height:36px;border-radius:7px;background:rgba(253,250,246,0.92);cursor:pointer;position:relative;transition:transform 0.1s,box-shadow 0.1s,filter 0.1s;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.7);}
+  .year-cell:hover{transform:scale(1.18);z-index:2;box-shadow:0 8px 18px rgba(14,26,22,0.18);filter:saturate(1.12);}
   .year-cell.empty{background:rgba(245,239,227,0.3);cursor:default;pointer-events:none;}
   .year-cell.is-today{outline:2px solid var(--teal-mid);outline-offset:1px;}
   .cell-tip{position:absolute;bottom:calc(100%+5px);left:50%;transform:translateX(-50%);background:var(--ink);color:var(--white);padding:4px 10px;border-radius:6px;font-size:11px;white-space:nowrap;pointer-events:none;z-index:100;opacity:0;transition:opacity 0.15s;font-family:'Jost',sans-serif;font-weight:300;}
@@ -330,8 +354,13 @@ const css = `
 
   @media(max-width:900px){
     .about{grid-template-columns:1fr;padding:60px 28px;gap:48px;}
-    .gallery{grid-template-columns:1fr;grid-template-rows:280px 180px 180px;height:auto;}
-    .g-main{grid-row:auto;}
+    .gallery-section{padding:54px 22px 64px;}
+    .gallery{grid-template-columns:1fr;grid-template-rows:280px 190px 190px 190px 190px 190px 190px;height:auto;gap:12px;}
+    .g-main,.g-wide{grid-row:auto;grid-column:auto;}
+    .request-card{grid-template-columns:1fr;}
+    .request-photo{display:none;}
+    .request-form-panel{padding:34px 24px;}
+    .request-page{padding:18px;}
     .auth-wrap{grid-template-columns:1fr;}
     .auth-left{display:none;}
     .request-section,.estate-footer{padding:60px 28px;}
@@ -349,27 +378,13 @@ const css = `
 function Toast({msg}){return <div className={`toast ${msg?"show":""}`}>{msg}</div>;}
 
 // ── ESTATE PAGE ───────────────────────────────────────────────────────────────
-function EstatePage({onFamilyAccess}){
-  const [form,setForm]=useState({name:"",email:"",checkin:"",checkout:"",message:""});
-  const [submitting,setSubmitting]=useState(false);
-  const [submitted,setSubmitted]=useState(false);
-  const [err,setErr]=useState("");
-  const upd=(k,v)=>setForm(p=>({...p,[k]:v}));
-
-  const submit=async()=>{
-    if(!form.name||!form.email||!form.checkin||!form.checkout){setErr("Please fill in all required fields.");return;}
-    setSubmitting(true);setErr("");
-    try{await api("request",{method:"POST",body:JSON.stringify(form)});setSubmitted(true);}
-    catch(e){setErr("Something went wrong. Please try again.");}
-    finally{setSubmitting(false);}
-  };
-
+function EstatePage({onFamilyAccess,onRequestStay}){
   return(
     <div className="estate">
       {/* Header */}
       <div className="hero-top">
         <div className="hero-logo">Casa Kallman</div>
-        <button className="btn-req-small" onClick={()=>document.getElementById("request-page")?.click()}>Request a Stay</button>
+        <button className="btn-req-small" onClick={onRequestStay}>Request a Stay</button>
       </div>
 
       {/* Hero */}
@@ -388,56 +403,22 @@ function EstatePage({onFamilyAccess}){
           </div>
           <button className="btn-cta-primary" onClick={onFamilyAccess}>Family Access →</button>
         </div>
-        <div className="hero-scroll"><span>Discover</span><span>↓</span></div>
+        <div className="hero-scroll"><span>Gallery</span><span>↓</span></div>
       </section>
 
       {/* Gallery */}
-      <div className="gallery">
-        <div className="g-cell g-main">
-          <img src={underwater} alt="Pool view"/>
-          <div className="g-label">Pool & Exterior</div>
-        </div>
-        <div className="g-cell">
-          <img src={veranda} alt="Veranda"/>
-          <div className="g-label">The Veranda</div>
-        </div>
-        <div className="g-cell">
-          <img src={sunset_pool} alt="Sunset"/>
-          <div className="g-label">Sunset Views</div>
-        </div>
-        <div className="g-cell">
-          <img src={kitchen} alt="Kitchen"/>
-          <div className="g-label">Chef's Kitchen</div>
-        </div>
-        <div className="g-cell">
-          <img src={living} alt="Living room"/>
-          <div className="g-label">Living Room</div>
-        </div>
-      </div>
-
-      {/* Request */}
-      <section className="request-section" id="request">
-        <div className="req-inner">
-          {submitted?(
-            <div className="success-wrap"><div className="success-icon">🌴</div><div className="success-title">Request Received</div><p className="success-sub">The Kallman family will be in touch to confirm your dates.</p></div>
-          ):(
-            <>
-              <div className="req-tag">Plan Your Visit</div>
-              <h2 className="req-title">Request a Stay</h2>
-              <p className="req-sub">Casa Kallman is a private family vacation home. Submit a request and the family will confirm availability and be in touch directly.</p>
-              <div className="form-row">
-                <div className="form-group"><label className="form-label">Your Name *</label><input className="form-input" value={form.name} onChange={e=>upd("name",e.target.value)} placeholder="Full name"/></div>
-                <div className="form-group"><label className="form-label">Email *</label><input className="form-input" type="email" value={form.email} onChange={e=>upd("email",e.target.value)} placeholder="your@email.com"/></div>
-              </div>
-              <div className="form-row">
-                <div className="form-group"><label className="form-label">Check In *</label><input className="form-input" type="date" value={form.checkin} onChange={e=>upd("checkin",e.target.value)}/></div>
-                <div className="form-group"><label className="form-label">Check Out *</label><input className="form-input" type="date" value={form.checkout} onChange={e=>upd("checkout",e.target.value)}/></div>
-              </div>
-              <div className="form-group"><label className="form-label">Message</label><textarea className="form-input" value={form.message} onChange={e=>upd("message",e.target.value)} placeholder="Tell us about your visit, group size, any questions..."/></div>
-              {err&&<div className="err" style={{marginBottom:12}}>{err}</div>}
-              <button className="btn-submit" onClick={submit} disabled={submitting}>{submitting?"Sending...":"Send Request"}</button>
-            </>
-          )}
+      <section className="gallery-section">
+        <div className="gallery-kicker">A private island house</div>
+        <h2 className="gallery-title">Inside Casa Kallman</h2>
+        <p className="gallery-sub">A calmer, more visual look at the spaces family and friends actually use: the pool, veranda, kitchen, living rooms, and sunset corners of the house.</p>
+        <div className="gallery">
+          <div className="g-cell g-main"><img src={pool_exterior} alt="Casa Kallman exterior"/><div className="g-label">Exterior</div></div>
+          <div className="g-cell"><img src={veranda} alt="Veranda"/><div className="g-label">Veranda</div></div>
+          <div className="g-cell"><img src={sunset_pool} alt="Sunset pool"/><div className="g-label">Sunset Pool</div></div>
+          <div className="g-cell g-wide"><img src={underwater} alt="Pool water"/><div className="g-label">Pool Light</div></div>
+          <div className="g-cell"><img src={kitchen} alt="Kitchen"/><div className="g-label">Kitchen</div></div>
+          <div className="g-cell"><img src={living} alt="Living room"/><div className="g-label">Living Room</div></div>
+          <div className="g-cell"><img src={living2} alt="Second living room"/><div className="g-label">Lounge</div></div>
         </div>
       </section>
 
@@ -445,6 +426,62 @@ function EstatePage({onFamilyAccess}){
         <div className="footer-brand">Casa Kallman</div>
         <div className="footer-loc">Sunset Key · Key West, FL</div>
       </footer>
+    </div>
+  );
+}
+
+function RequestStayPage({onBack}){
+  const [form,setForm]=useState({name:"",email:"",checkin:"",checkout:"",message:""});
+  const [submitting,setSubmitting]=useState(false);
+  const [submitted,setSubmitted]=useState(false);
+  const [err,setErr]=useState("");
+  const upd=(k,v)=>setForm(p=>({...p,[k]:v}));
+
+  const submit=async()=>{
+    if(!form.name||!form.email||!form.checkin||!form.checkout){setErr("Please fill in all required fields.");return;}
+    setSubmitting(true);setErr("");
+    try{await api("request",{method:"POST",body:JSON.stringify(form)});setSubmitted(true);}
+    catch(e){setErr("Something went wrong. Please try again.");}
+    finally{setSubmitting(false);}
+  };
+
+  return(
+    <div className="request-page">
+      <div className="request-card">
+        <div className="request-photo">
+          <img src={sunset_pool} alt="Casa Kallman sunset pool"/>
+          <div className="request-photo-copy">
+            <div>
+              <div className="request-photo-title">Casa Kallman</div>
+              <div className="auth-left-sub">Sunset Key · Key West</div>
+            </div>
+            <div className="request-photo-text">Private family house, shared carefully with friends of the family.</div>
+          </div>
+        </div>
+        <div className="request-form-panel">
+          <button className="request-back" onClick={onBack}>← Back to Casa Kallman</button>
+          {submitted?(
+            <div className="success-wrap" style={{padding:"40px 0"}}><div className="success-icon">🌴</div><div className="success-title" style={{color:"var(--teal)"}}>Request Received</div><p className="success-sub" style={{color:"var(--mid)"}}>The Kallman family will be in touch to confirm your dates.</p></div>
+          ):(
+            <>
+              <div className="req-tag" style={{color:"var(--teal-mid)"}}>Plan Your Visit</div>
+              <h2 className="req-title" style={{color:"var(--teal)"}}>Request a Stay</h2>
+              <p className="req-sub" style={{color:"var(--mid)"}}>Submit your dates and a short note. The family will review the request and confirm availability directly.</p>
+              <div className="form-row">
+                <div className="field-group"><label className="field-label">Your Name *</label><input className="field-input" value={form.name} onChange={e=>upd("name",e.target.value)} placeholder="Full name"/></div>
+                <div className="field-group"><label className="field-label">Email *</label><input className="field-input" type="email" value={form.email} onChange={e=>upd("email",e.target.value)} placeholder="your@email.com"/></div>
+              </div>
+              <div className="form-row">
+                <div className="field-group"><label className="field-label">Check In *</label><input className="field-input" type="date" value={form.checkin} onChange={e=>upd("checkin",e.target.value)}/></div>
+                <div className="field-group"><label className="field-label">Check Out *</label><input className="field-input" type="date" value={form.checkout} onChange={e=>upd("checkout",e.target.value)}/></div>
+              </div>
+              <div className="field-group"><label className="field-label">Message</label><textarea className="field-input" value={form.message} onChange={e=>upd("message",e.target.value)} placeholder="Group size, reason for visit, any questions..." style={{minHeight:120}}/></div>
+              {err&&<div className="err" style={{marginBottom:12}}>{err}</div>}
+              <button className="btn-primary" onClick={submit} disabled={submitting}>{submitting?"Sending...":"Send Request"}</button>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -901,7 +938,8 @@ export default function App(){
   return(
     <>
       <style>{css}</style>
-      {screen==="estate"&&<EstatePage onFamilyAccess={()=>setScreen("auth")}/>}
+      {screen==="estate"&&<EstatePage onFamilyAccess={()=>setScreen("auth")} onRequestStay={()=>setScreen("request")}/>}
+      {screen==="request"&&<RequestStayPage onBack={()=>setScreen("estate")}/>}
       {screen==="auth"&&<AuthScreen onBack={()=>setScreen("estate")} onSuccess={(u)=>{setUser(u);setScreen("app");}}/>}
       {screen==="app"&&<FamilyApp user={user} bookings={bookings} isGuest={isGuest} onSave={handleSave} onDelete={handleDelete} showToast={showToast} onGoHome={()=>setScreen("estate")}/>}
       <Toast msg={toast}/>
