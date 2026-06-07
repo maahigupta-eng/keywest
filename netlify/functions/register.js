@@ -1,5 +1,4 @@
 import crypto from "crypto";
-import { getStore } from "@netlify/blobs";
 
 const headers = {
   "Content-Type": "application/json",
@@ -25,8 +24,6 @@ function hashPassword(password, salt) {
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers, body: "" };
 
-  const store = getStore({ name: "beach-house-users", consistency: "strong" });
-
   try {
     const { name, password, familyPasskey } = JSON.parse(event.body || "{}");
     if (!name || !password) return { statusCode: 400, headers, body: JSON.stringify({ error: "Name and password required" }) };
@@ -36,7 +33,10 @@ export const handler = async (event) => {
       return { statusCode: 401, headers, body: JSON.stringify({ error: "Incorrect family passkey." }) };
     }
 
+    const { getStore } = await import("@netlify/blobs");
+    const store = getStore("beach-house-users");
     const userKey = name.trim().toLowerCase().replace(/\s+/g, "_");
+
     let existing = null;
     try { existing = await store.get(userKey, { type: "json" }); } catch {}
     if (existing) return { statusCode: 409, headers, body: JSON.stringify({ error: "Name already taken. Try logging in." }) };
@@ -47,10 +47,4 @@ export const handler = async (event) => {
     const isAdmin = allKeys.blobs.length === 0;
     const user = { name: name.trim(), userKey, hash, salt, isAdmin, createdAt: new Date().toISOString() };
     await store.setJSON(userKey, user);
-    const token = signToken({ userKey, name: user.name, isAdmin });
-    return { statusCode: 200, headers, body: JSON.stringify({ token, user: { name: user.name, isAdmin } }) };
-
-  } catch (err) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: "Server error: " + err.message }) };
-  }
-};
+    const token = signToken({ userKey, name: u
