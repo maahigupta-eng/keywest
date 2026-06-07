@@ -66,6 +66,8 @@ const css = `
 
   .hero-top{position:absolute;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:28px 40px;}
   .hero-logo{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:rgba(255,255,255,0.85);letter-spacing:1px;}
+  .btn-req-small{font-family:'Jost',sans-serif;font-size:11px;font-weight:300;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.6);background:none;border:1px solid rgba(255,255,255,0.2);border-radius:50px;padding:9px 20px;cursor:pointer;transition:all 0.25s;text-decoration:none;}
+  .btn-req-small:hover{color:white;border-color:rgba(255,255,255,0.4);}
   .btn-family{
     font-family:'Jost',sans-serif;font-size:12px;font-weight:400;letter-spacing:2px;
     text-transform:uppercase;color:var(--white);
@@ -221,10 +223,10 @@ const css = `
   .btn-nav:hover{background:var(--teal);color:var(--white);border-color:var(--teal);}
   .btn-add{padding:9px 20px;background:var(--sunset);color:var(--white);border:none;border-radius:10px;font-size:11px;font-weight:400;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Jost',sans-serif;transition:all 0.2s;}
   .btn-add:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(232,137,74,0.3);}
-  .year-grid{display:flex;flex-direction:column;gap:3px;}
+  .year-grid{display:flex;flex-direction:column;gap:2px;background:var(--sand-mid);padding:4px;border-radius:14px;}
   .year-row{display:grid;grid-template-columns:44px repeat(31,1fr);gap:2px;align-items:center;}
-  .year-label{font-size:10px;font-weight:400;letter-spacing:1.5px;text-transform:uppercase;color:var(--light);text-align:right;padding-right:10px;}
-  .year-cell{height:26px;border-radius:4px;background:rgba(255,255,255,0.8);cursor:pointer;position:relative;transition:transform 0.1s,box-shadow 0.1s;}
+  .year-label{font-size:10px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--mid);text-align:right;padding-right:12px;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;}
+  .year-cell{height:32px;border-radius:5px;background:rgba(255,255,255,0.85);cursor:pointer;position:relative;transition:transform 0.1s,box-shadow 0.1s;display:flex;align-items:center;justify-content:center;}
   .year-cell:hover{transform:scale(1.25);z-index:2;box-shadow:0 2px 8px rgba(0,0,0,0.15);}
   .year-cell.empty{background:rgba(245,239,227,0.3);cursor:default;pointer-events:none;}
   .year-cell.is-today{outline:2px solid var(--teal-mid);outline-offset:1px;}
@@ -367,7 +369,7 @@ function EstatePage({onFamilyAccess}){
       {/* Header */}
       <div className="hero-top">
         <div className="hero-logo">Casa Kallman</div>
-        <button className="btn-family" onClick={onFamilyAccess}>Family Access →</button>
+        <button className="btn-req-small" onClick={()=>document.getElementById("request-page")?.click()}>Request a Stay</button>
       </div>
 
       {/* Hero */}
@@ -384,7 +386,7 @@ function EstatePage({onFamilyAccess}){
             <span className="hero-pill">Private Island</span>
             <span className="hero-pill">Ocean Views</span>
           </div>
-          <a href="#request" className="btn-cta-primary">Request a Stay</a>
+          <button className="btn-cta-primary" onClick={onFamilyAccess}>Family Access →</button>
         </div>
         <div className="hero-scroll"><span>Discover</span><span>↓</span></div>
       </section>
@@ -410,30 +412,6 @@ function EstatePage({onFamilyAccess}){
         <div className="g-cell">
           <img src={living} alt="Living room"/>
           <div className="g-label">Living Room</div>
-        </div>
-      </div>
-
-      {/* About */}
-      <div className="about">
-        <div>
-          <div className="about-tag">The Property</div>
-          <h2 className="about-title">A private vacation home at the edge of the Atlantic</h2>
-          <p className="about-body">Nestled on Sunset Key — a private island accessible only by ferry from Old Town Key West — Casa Kallman is the Kallman family's vacation home. With a resort-style pool, lush tropical gardens, and sweeping ocean views, it's the kind of place where time slows down and evenings end with the sound of the sea.</p>
-          <div className="about-tag" style={{marginTop:36}}>What's Here</div>
-          <div className="amenities">
-            {[{icon:"🏊",name:"Resort Pool",desc:"Lagoon-style pool with sundeck"},{icon:"🌴",name:"Private Island",desc:"Ferry access, no cars, total seclusion"},{icon:"🌊",name:"Ocean Views",desc:"Direct Atlantic views throughout"},{icon:"🍽️",name:"Chef's Kitchen",desc:"Full kitchen with ocean sightlines"}].map(a=>(
-              <div key={a.name} className="amenity"><div className="amenity-icon">{a.icon}</div><div className="amenity-name">{a.name}</div><div className="amenity-desc">{a.desc}</div></div>
-            ))}
-          </div>
-        </div>
-        <div>
-          <div className="about-quote">"Mornings begin with coffee on the veranda. Evenings end with the sound of the sea."</div>
-          <div className="photo-grid-sm">
-            <div className="photo-sm"><img src={living2} alt="Living"/></div>
-            <div className="photo-sm"><img src={veranda} alt="Veranda"/></div>
-            <div className="photo-sm"><img src={sunset_pool} alt="Sunset"/></div>
-            <div className="photo-sm"><img src={kitchen} alt="Kitchen"/></div>
-          </div>
         </div>
       </div>
 
@@ -671,6 +649,8 @@ function YearView({bookings,user,isGuest,onSave,onDelete,showToast}){
                     style={bg?{background:bg}:{}}
                     onClick={()=>bs.length&&setEditB(bs[0])}
                     title={names}>
+                    {bs.length===1&&<span style={{fontSize:9,fontWeight:600,color:"rgba(255,255,255,0.9)",letterSpacing:0,lineHeight:1}}>{bs[0].name?.[0]?.toUpperCase()}</span>}
+                    {bs.length>1&&<span style={{fontSize:8,fontWeight:600,color:"rgba(255,255,255,0.9)"}}>{bs.length}</span>}
                     {names&&<div className="cell-tip">{names}</div>}
                   </div>
                 );
