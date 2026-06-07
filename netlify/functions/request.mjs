@@ -27,36 +27,35 @@ function getUser(event) {
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers, body: "" };
 
-  const store = getStore({ name: "beach-house-requests", consistency: "strong" });
+  const store = getStore({
+    name: "beach-house-requests",
+    siteID: process.env.NETLIFY_SITE_ID,
+    token: process.env.NETLIFY_TOKEN,
+  });
+
   const pathParts = event.path.replace(/.*\/api\/requests\/?/, "").split("/").filter(Boolean);
   const reqId = pathParts[0] || null;
 
   try {
-    // GET all requests (admin only)
     if (event.httpMethod === "GET") {
       const user = getUser(event);
-      if (!user?.isAdmin) return { statusCode: 403, headers, body: JSON.stringify({ error: "Admin only" }) };
+      if (!user) return { statusCode: 403, headers, body: JSON.stringify({ error: "Login required" }) };
       let list = { blobs: [] };
       try { list = await store.list(); } catch {}
       const requests = await Promise.all(list.blobs.map(async b => {
         try { return await store.get(b.key, { type: "json" }); } catch { return null; }
       }));
-      const valid = requests.filter(Boolean).sort((a,b) => b.createdAt?.localeCompare(a.createdAt));
+      const valid = requests.filter(Boolean).sort((a, b) => b.createdAt?.localeCompare(a.createdAt));
       return { statusCode: 200, headers, body: JSON.stringify({ requests: valid }) };
     }
 
-    // POST new request (public)
     if (event.httpMethod === "POST" && !reqId) {
       const { name, email, checkin, checkout, message } = JSON.parse(event.body || "{}");
-      if (!name || !email || !checkin || !checkout) {
-        return { statusCode: 400, headers, body: JSON.stringify({ error: "Missing required fields" }) };
-      }
-
+      if (!name || !email || !checkin || !checkout) return { statusCode: 400, headers, body: JSON.stringify({ error: "Missing fields" }) };
       const id = crypto.randomUUID();
-      const request = { id, name, email, checkin, checkout, message: message||"", status: "pending", createdAt: new Date().toISOString() };
+      const request = { id, name, email, checkin, checkout, message: message || "", status: "pending", createdAt: new Date().toISOString() };
       await store.setJSON(id, request);
 
-      // Send email via Resend
       const resendKey = process.env.RESEND_API_KEY;
       const notifyEmail = process.env.NOTIFY_EMAIL || "kallmanjt@gmail.com";
       if (resendKey) {
@@ -68,32 +67,17 @@ export const handler = async (event) => {
               from: "Casa Kallman <onboarding@resend.dev>",
               to: notifyEmail,
               subject: `New Stay Request from ${name}`,
-              html: `
-                <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#1C2B2B;">
-                  <h1 style="font-size:32px;font-weight:300;color:#1A6B6B;margin-bottom:8px;">New Stay Request</h1>
-                  <p style="color:#4A6363;margin-bottom:32px;">Someone would like to stay at Casa Kallman.</p>
-                  <table style="width:100%;border-collapse:collapse;">
-                    <tr><td style="padding:12px 0;border-bottom:1px solid #F2E4C8;color:#8AACAC;font-size:12px;letter-spacing:1px;text-transform:uppercase;">Name</td><td style="padding:12px 0;border-bottom:1px solid #F2E4C8;font-size:16px;">${name}</td></tr>
-                    <tr><td style="padding:12px 0;border-bottom:1px solid #F2E4C8;color:#8AACAC;font-size:12px;letter-spacing:1px;text-transform:uppercase;">Email</td><td style="padding:12px 0;border-bottom:1px solid #F2E4C8;font-size:16px;">${email}</td></tr>
-                    <tr><td style="padding:12px 0;border-bottom:1px solid #F2E4C8;color:#8AACAC;font-size:12px;letter-spacing:1px;text-transform:uppercase;">Check In</td><td style="padding:12px 0;border-bottom:1px solid #F2E4C8;font-size:16px;">${checkin}</td></tr>
-                    <tr><td style="padding:12px 0;border-bottom:1px solid #F2E4C8;color:#8AACAC;font-size:12px;letter-spacing:1px;text-transform:uppercase;">Check Out</td><td style="padding:12px 0;border-bottom:1px solid #F2E4C8;font-size:16px;">${checkout}</td></tr>
-                    ${message?`<tr><td style="padding:12px 0;color:#8AACAC;font-size:12px;letter-spacing:1px;text-transform:uppercase;">Message</td><td style="padding:12px 0;font-size:16px;font-style:italic;">"${message}"</td></tr>`:""}
-                  </table>
-                  <p style="margin-top:32px;color:#4A6363;font-size:14px;">Log in to <a href="https://keywestkallman.netlify.app" style="color:#2E9B8F;">Casa Kallman</a> to approve or deny this request.</p>
-                </div>
-              `,
+              html: `<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#1C2B2B;"><h1 style="font-size:32px;font-weight:300;color:#1A6B6B;">New Stay Request</h1><p>${name} (${email}) wants to stay from ${checkin} to ${checkout}.</p>${message ? `<p style="font-style:italic">"${message}"</p>` : ""}<p>Log in to <a href="https://keywestkallman.netlify.app" style="color:#2E9B8F;">Casa Kallman</a> to approve or deny.</p></div>`,
             }),
           });
-        } catch(e) { console.error("Email send failed:", e); }
+        } catch(e) { console.error("Email failed:", e); }
       }
-
-      return { statusCode: 201, headers, body: JSON.stringify({ ok: true, request }) };
+      return { statusCode: 201, headers, body: JSON.stringify({ ok: true }) };
     }
 
-    // PUT update request status (admin only)
     if (event.httpMethod === "PUT" && reqId) {
       const user = getUser(event);
-      if (!user?.isAdmin) return { statusCode: 403, headers, body: JSON.stringify({ error: "Admin only" }) };
+      if (!user) return { statusCode: 403, headers, body: JSON.stringify({ error: "Login required" }) };
       let existing = null;
       try { existing = await store.get(reqId, { type: "json" }); } catch {}
       if (!existing) return { statusCode: 404, headers, body: JSON.stringify({ error: "Not found" }) };
@@ -104,9 +88,7 @@ export const handler = async (event) => {
     }
 
     return { statusCode: 404, headers, body: JSON.stringify({ error: "Not found" }) };
-
   } catch(err) {
-    console.error("Request error:", err);
     return { statusCode: 500, headers, body: JSON.stringify({ error: "Server error: " + err.message }) };
   }
 };
