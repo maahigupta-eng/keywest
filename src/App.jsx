@@ -170,6 +170,11 @@ const css = `
   .person-stay-row{font-size:12px;color:var(--mid);padding:4px 0;border-bottom:1px solid rgba(232,220,200,0.5);font-weight:300;display:flex;align-items:center;gap:6px;}
   .person-stay-row:last-child{border-bottom:none;}
   .psr-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .person-av-wrap{position:relative;width:56px;height:56px;margin:0 auto 12px;cursor:pointer;}
+  .person-av-wrap input[type=file]{display:none;}
+  .person-av-img{width:56px;height:56px;border-radius:50%;object-fit:cover;display:block;border:3px solid rgba(255,255,255,0.5);box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+  .person-av-overlay{position:absolute;inset:0;border-radius:50%;background:rgba(14,26,22,0.45);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;font-size:18px;}
+  .person-av-wrap:hover .person-av-overlay{opacity:1;}
 
   /* Photos */
   .photos-house-grid{display:grid;grid-template-columns:1.6fr 1fr;grid-template-rows:340px 220px;gap:6px;border-radius:16px;overflow:hidden;margin-bottom:40px;}
@@ -507,7 +512,7 @@ function WhoCard({stay,now}){
   };
   return(
     <div style={{background:"var(--white)",borderRadius:14,padding:"18px 20px",marginBottom:10,display:"flex",alignItems:"flex-start",gap:14,border:`1px solid ${now?"var(--teal-light)":"var(--sand-mid)"}`,boxShadow:now?"0 4px 20px rgba(46,155,127,0.1)":"none"}}>
-      <div style={{width:44,height:44,borderRadius:"50%",background:stay.color||DEFAULT_COLOR,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:500,color:"white",flexShrink:0}}>{stay.name[0]?.toUpperCase()}</div>
+      <WhoAvatar name={stay.name} color={stay.color||DEFAULT_COLOR}/>
       <div style={{flex:1}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
           <div style={{fontSize:16,fontWeight:400}}>{stay.name}</div>
@@ -600,9 +605,7 @@ function PeoplePage({stays}){
               const isEditing=editingNote===p.name;
               return(
                 <div key={p.name} className="person-card">
-                  <div className="person-card-top" style={{background:`linear-gradient(135deg,${p.color}22,${p.color}44)`}}>
-                    <div className="person-av" style={{background:p.color}}>{p.name[0]?.toUpperCase()}</div>
-                  </div>
+                  <PersonAvatar name={p.name} color={p.color}/>
                   <div className="person-card-body">
                     <div className="person-name">{p.name}</div>
                     <div className="person-meta">{upcomingStays.length>0?`Next up: ${fmt(upcomingStays[0].start)}`:(pastStays.length>0?`Last visited: ${fmt(pastStays[pastStays.length-1].start)}`:"No visits yet")}</div>
