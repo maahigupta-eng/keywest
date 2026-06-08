@@ -9,7 +9,7 @@ const COLORS = [
   { id:"blue",    hex:"#5BA4CF" },{ id:"terra",   hex:"#C17B5C" },
   { id:"green",   hex:"#6BB89A" },{ id:"golden",  hex:"#D4A843" },
   { id:"orchid",  hex:"#9B7BA8" },{ id:"coral",   hex:"#E06B6B" },
-  { id:"navy",    hex:"#4A6FA5" },{ id:"sage",    hex:"#7A9E7E" },
+  { id:"navy",    hex:"#4A6FA5" },{ id:"sage",   hex:"#7A9E7E" },
   { id:"rose",    hex:"#C2788A" },
 ];
 const DEFAULT_COLOR = "#2E9B7F";
@@ -71,8 +71,10 @@ const css = `
   .gate-input{width:100%;padding:14px 20px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.16);border-radius:12px;font-size:20px;color:var(--white);letter-spacing:5px;text-align:center;outline:none;transition:border-color 0.2s;font-family:'Jost',sans-serif;}
   .gate-input::placeholder{letter-spacing:2px;color:rgba(255,255,255,0.18);font-size:13px;}
   .gate-input:focus{border-color:rgba(91,191,163,0.6);}
-  .gate-btn{width:100%;margin-top:12px;padding:14px;background:linear-gradient(135deg,var(--teal-mid),var(--teal-light));color:var(--white);border:none;border-radius:12px;font-size:11px;font-weight:400;letter-spacing:2.5px;text-transform:uppercase;cursor:pointer;font-family:'Jost',sans-serif;transition:all 0.2s;box-shadow:0 6px 24px rgba(46,155,127,0.32);}
+  .gate-btn{width:100%;margin-top:12px;padding:14px;background:linear-gradient(135deg,var(--teal-mid),var(--teal-light));color:var(--white);border:none;border-radius:12px;font-size:11px;font-weight:400;letter-spacing:2.5px;text-transform:uppercase;cursor:pointer;font-family:'Jost',sans-serif;transition:all 0.2s;box-shadow:0 6px 24px rgba(46,155,127,0.32);position:relative;overflow:hidden;}
   .gate-btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(46,155,127,0.44);}
+  .gate-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,0.15),transparent 60%);background-size:200%;animation:shimmer 2.5s infinite;border-radius:12px;}
+  @keyframes shimmer{0%{background-position:200%}100%{background-position:-200%}}
   .gate-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
   .gate-error{margin-top:10px;font-size:13px;color:#ffb3b3;font-weight:300;}
 
@@ -91,43 +93,57 @@ const css = `
   /* ── CALENDAR PAGE ── */
   .cal-page{display:grid;grid-template-columns:1fr 300px;flex:1;}
 
-  /* Calendar background gradient */
+  /* Calendar background — dark atmospheric */
   .cal-main{
     padding:28px 32px;
-    background:linear-gradient(160deg,
-      rgba(168,221,208,0.18) 0%,
-      rgba(245,239,227,0.8) 40%,
-      rgba(242,228,200,0.5) 100%
-    );
+    background:
+      radial-gradient(ellipse at 50% 40%, rgba(42,90,76,0.55) 0%, transparent 65%),
+      radial-gradient(ellipse at 0% 100%, rgba(26,107,107,0.4) 0%, transparent 50%),
+      radial-gradient(ellipse at 100% 0%, rgba(91,164,207,0.2) 0%, transparent 45%),
+      linear-gradient(160deg, #0d2420 0%, #1a3830 35%, #1e4038 65%, #0f2824 100%);
     min-height:calc(100vh - 100px);
+    position:relative;
   }
 
-  .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+  /* Giant ghosted month watermark */
+  .cal-watermark{
+    position:absolute;top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(80px,14vw,180px);
+    font-weight:300;font-style:italic;
+    color:rgba(255,255,255,0.04);
+    white-space:nowrap;pointer-events:none;
+    letter-spacing:-4px;user-select:none;
+    z-index:0;
+  }
+
+  .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;position:relative;z-index:1;}
   .cal-nav{display:flex;align-items:center;gap:14px;}
-  .cal-month-title{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:400;color:var(--teal);}
-  .btn-nav{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--sand-dark);background:rgba(255,255,255,0.7);color:var(--teal);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
-  .btn-nav:hover{background:var(--teal);color:white;border-color:var(--teal);}
+  .cal-month-title{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:400;color:rgba(255,255,255,0.9);}
+  .btn-nav{width:32px;height:32px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+  .btn-nav:hover{background:rgba(255,255,255,0.2);color:white;border-color:rgba(255,255,255,0.4);}
   .btn-add-stay{padding:10px 22px;background:var(--sunset);color:white;border:none;border-radius:50px;font-size:11px;font-weight:400;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Jost',sans-serif;transition:all 0.2s;box-shadow:0 4px 16px rgba(232,137,74,0.3);}
   .btn-add-stay:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(232,137,74,0.4);}
 
-  .cal-day-labels{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px;}
-  .day-label{text-align:center;font-size:10px;font-weight:400;letter-spacing:2px;text-transform:uppercase;color:var(--light);padding:6px 0;}
+  .cal-day-labels{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px;position:relative;z-index:1;}
+  .day-label{text-align:center;font-size:10px;font-weight:400;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);padding:6px 0;}
 
-  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;position:relative;z-index:1;}
   .cal-cell{
     min-height:108px;
-    background:rgba(253,250,246,0.85);
+    background:rgba(253,250,246,0.96);
     border-radius:10px;
     padding:9px 7px 7px;
     display:flex;flex-direction:column;
-    border:1.5px solid rgba(200,184,152,0.25);
+    border:1px solid rgba(255,255,255,0.6);
     position:relative;overflow:hidden;
-    transition:border-color 0.15s, box-shadow 0.15s;
-    backdrop-filter:blur(4px);
+    transition:border-color 0.15s, box-shadow 0.2s, transform 0.15s;
+    box-shadow:0 2px 12px rgba(0,0,0,0.18), 0 1px 0 rgba(255,255,255,0.8) inset;
   }
-  .cal-cell:hover{box-shadow:0 4px 16px rgba(14,26,22,0.07);}
-  .cal-cell.other-month{background:rgba(253,250,246,0.35);opacity:0.4;}
-  .cal-cell.is-today{border-color:var(--teal-mid);box-shadow:0 0 0 1px rgba(46,155,127,0.2);}
+  .cal-cell:hover{box-shadow:0 6px 24px rgba(0,0,0,0.28);transform:translateY(-1px);}
+  .cal-cell.other-month{background:rgba(253,250,246,0.2);opacity:0.35;box-shadow:none;}
+  .cal-cell.is-today{border-color:var(--teal-light);box-shadow:0 0 0 2px rgba(91,191,163,0.4),0 4px 16px rgba(0,0,0,0.2);}
   .cal-cell.is-empty::after{content:'🌴';position:absolute;bottom:5px;right:6px;font-size:15px;opacity:0.06;pointer-events:none;}
   .cell-date{font-size:12px;font-weight:400;color:var(--mid);margin-bottom:4px;line-height:1;}
   .is-today .cell-date{color:white;background:var(--teal-mid);width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;}
@@ -139,8 +155,8 @@ const css = `
     padding:0 8px;font-size:11px;font-weight:400;
     color:white;cursor:pointer;white-space:nowrap;
     overflow:hidden;text-overflow:ellipsis;
-    transition:opacity 0.15s,transform 0.1s;
-    box-shadow:0 1px 4px rgba(0,0,0,0.14);
+    transition:opacity 0.15s,transform 0.1s,box-shadow 0.15s;
+    box-shadow:0 2px 6px rgba(0,0,0,0.2),0 1px 0 rgba(255,255,255,0.2) inset;
     letter-spacing:0.2px;position:relative;
     border-radius:4px;
   }
@@ -154,8 +170,8 @@ const css = `
 
   /* ── SIDEBAR ── */
   .cal-sidebar{
-    background:var(--white);
-    border-left:1px solid var(--sand-mid);
+    background:linear-gradient(180deg, #0d2420 0%, #1a3830 40%, var(--white) 40%);
+    border-left:1px solid rgba(255,255,255,0.05);
     padding:0;
     overflow-y:auto;
     display:flex;flex-direction:column;
@@ -180,7 +196,7 @@ const css = `
   .sb-photo-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4);cursor:pointer;transition:background 0.2s;}
   .sb-photo-dot.active{background:white;}
 
-  .sb-content{padding:20px 18px;flex:1;}
+  .sb-content{padding:20px 18px;flex:1;background:var(--white);}
   .sb-section{margin-bottom:24px;}
   .sb-label{font-size:10px;font-weight:400;letter-spacing:2.5px;text-transform:uppercase;color:var(--light);margin-bottom:12px;}
   .sb-empty{font-size:13px;color:var(--light);font-weight:300;font-style:italic;}
@@ -208,6 +224,15 @@ const css = `
 
   /* ── PEOPLE PAGE ── */
   .people-page{padding:40px 40px 60px;max-width:960px;margin:0 auto;width:100%;}
+  .page-hero{
+    background:linear-gradient(135deg,#0d2420 0%,#1a3830 50%,#1e4a3a 100%);
+    padding:48px 40px 40px;margin-bottom:0;
+  }
+  .page-hero-title{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:300;color:var(--white);margin-bottom:6px;}
+  .page-hero-sub{font-size:13px;color:rgba(255,255,255,0.45);font-weight:300;letter-spacing:0.5px;}
+  .page-body{padding:36px 40px 60px;max-width:960px;margin:0 auto;width:100%;}
+  .whos-body{padding:32px 40px 60px;max-width:700px;margin:0 auto;width:100%;}
+  .photos-body{padding:36px 40px 60px;max-width:1100px;margin:0 auto;width:100%;}
   .page-title{font-family:'Cormorant Garamond',serif;font-size:40px;font-weight:300;color:var(--teal);margin-bottom:6px;}
   .page-sub{font-size:14px;color:var(--light);font-weight:300;margin-bottom:32px;}
   .people-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;}
@@ -495,9 +520,12 @@ function WhosThereTab({ stays }) {
   const upcoming = all.filter(s => s.start > td);
 
   return (
-    <div style={{padding:"36px 40px",maxWidth:700,margin:"0 auto",width:"100%"}}>
-      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:38,fontWeight:300,color:"var(--teal)",marginBottom:6}}>Who's There</div>
-      <div style={{fontSize:14,color:"var(--light)",fontWeight:300,marginBottom:32}}>At the house and coming up</div>
+    <div>
+      <div className="page-hero">
+        <div className="page-hero-title">Who's There</div>
+        <div className="page-hero-sub">At the house and coming up</div>
+      </div>
+      <div className="whos-body">
 
       {atHouse.length > 0 && (
         <div style={{marginBottom:32}}>
@@ -524,6 +552,7 @@ function WhosThereTab({ stays }) {
           <div style={{fontSize:14,fontWeight:300}}>Nothing planned yet — the house is waiting.</div>
         </div>
       )}
+      </div>
     </div>
   );
 }
@@ -634,6 +663,7 @@ function CalendarPage({ stays, knownPeople, onSave, onDelete, showToast }) {
   return (
     <div className="cal-page">
       <div className="cal-main">
+        <div className="cal-watermark">{MONTH_NAMES[month]}</div>
         <div className="cal-header">
           <div className="cal-nav">
             <button className="btn-nav" onClick={prev}>‹</button>
@@ -743,9 +773,12 @@ function PeoplePage({ stays }) {
   },[]);
 
   return (
-    <div className="people-page">
-      <div className="page-title">Profiles</div>
-      <div className="page-sub">People who've been to the house</div>
+    <div>
+      <div className="page-hero">
+        <div className="page-hero-title">Profiles</div>
+        <div className="page-hero-sub">People who've been to the house</div>
+      </div>
+      <div className="page-body">
       {people.length===0?(
         <div style={{textAlign:"center",padding:"60px 0",color:"var(--light)"}}>
           <div style={{fontSize:40,marginBottom:12}}>🌴</div>
@@ -832,8 +865,11 @@ function PhotosPage({ showToast }) {
 
   return (
     <div className="photos-page">
-      <div className="page-title" style={{marginBottom:6}}>Photos</div>
-      <div className="page-sub" style={{marginBottom:24}}>Add memories from your visits, then see the house below.</div>
+      <div className="page-hero">
+        <div className="page-hero-title">Photos</div>
+        <div className="page-hero-sub">Memories from your visits and the house</div>
+      </div>
+      <div className="photos-body">
 
       <div className="photos-upload-section">
         <div className="photos-section-title">Memories</div>
@@ -881,6 +917,7 @@ function PhotosPage({ showToast }) {
           <div className="ph-cell"><img className="ph-img" src={veranda} alt="Veranda"/><div className="ph-label">The Veranda</div></div>
           <div className="ph-cell"><img className="ph-img" src={sunset_pool} alt="Sunset"/><div className="ph-label">Sunset</div></div>
         </div>
+      </div>
       </div>
     </div>
   );
