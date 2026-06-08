@@ -163,9 +163,10 @@ const css = `
 
   /* Sidebar house photo */
   .sb-photo{
-    height:160px;overflow:hidden;position:relative;flex-shrink:0;
+    height:160px;overflow:hidden;position:relative;flex-shrink:0;cursor:pointer;
   }
-  .sb-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+  .sb-photo img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.6s ease;}
+  .sb-photo:hover img{transform:scale(1.04);}
   .sb-photo-overlay{
     position:absolute;inset:0;
     background:linear-gradient(to top,rgba(14,26,22,0.6) 0%,transparent 60%);
@@ -175,6 +176,9 @@ const css = `
     font-family:'Cormorant Garamond',serif;font-style:italic;
     font-size:18px;font-weight:300;color:rgba(255,255,255,0.9);
   }
+  .sb-photo-nav{position:absolute;bottom:14px;right:14px;display:flex;gap:5px;}
+  .sb-photo-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4);cursor:pointer;transition:background 0.2s;}
+  .sb-photo-dot.active{background:white;}
 
   .sb-content{padding:20px 18px;flex:1;}
   .sb-section{margin-bottom:24px;}
@@ -463,6 +467,125 @@ function DetailModal({ stay, onClose, onEdit, onDelete }) {
   );
 }
 
+
+// ── SIDEBAR PHOTO (cycling) ───────────────────────────────────────────────────
+function SidebarPhoto() {
+  const [idx, setIdx] = useState(0);
+  const cycle = () => setIdx(i => (i+1) % HOUSE_PHOTOS.length);
+  const p = HOUSE_PHOTOS[idx];
+  return (
+    <div className="sb-photo" onClick={cycle} title="Click to see more">
+      <img src={p.src} alt={p.label}/>
+      <div className="sb-photo-overlay"/>
+      <div className="sb-photo-label">{p.label}</div>
+      <div className="sb-photo-nav">
+        {HOUSE_PHOTOS.map((_,i)=>(
+          <div key={i} className={`sb-photo-dot ${i===idx?"active":""}`} onClick={e=>{e.stopPropagation();setIdx(i);}}/>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── WHO'S THERE TAB ───────────────────────────────────────────────────────────
+function WhosThereTab({ stays }) {
+  const td = today();
+  const all = stays.filter(s => s.end >= td).sort((a,b) => a.start.localeCompare(b.start));
+  const atHouse = all.filter(s => s.start <= td);
+  const upcoming = all.filter(s => s.start > td);
+
+  return (
+    <div style={{padding:"36px 40px",maxWidth:700,margin:"0 auto",width:"100%"}}>
+      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:38,fontWeight:300,color:"var(--teal)",marginBottom:6}}>Who's There</div>
+      <div style={{fontSize:14,color:"var(--light)",fontWeight:300,marginBottom:32}}>At the house and coming up</div>
+
+      {atHouse.length > 0 && (
+        <div style={{marginBottom:32}}>
+          <div style={{fontSize:10,fontWeight:400,letterSpacing:"2.5px",textTransform:"uppercase",color:"var(--light)",marginBottom:14}}>At the house now</div>
+          {atHouse.map(s => (
+            <WhoCard key={s.id} stay={s} now={true}/>
+          ))}
+        </div>
+      )}
+
+      {upcoming.length > 0 && (
+        <div>
+          <div style={{fontSize:10,fontWeight:400,letterSpacing:"2.5px",textTransform:"uppercase",color:"var(--light)",marginBottom:14}}>Coming up</div>
+          {upcoming.map(s => (
+            <WhoCard key={s.id} stay={s} now={false}/>
+          ))}
+        </div>
+      )}
+
+      {all.length === 0 && (
+        <div style={{textAlign:"center",padding:"60px 0",color:"var(--light)"}}>
+          <div style={{fontSize:40,marginBottom:12}}>🌴</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,color:"var(--teal)",marginBottom:6}}>All clear</div>
+          <div style={{fontSize:14,fontWeight:300}}>Nothing planned yet — the house is waiting.</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function WhoCard({ stay, now }) {
+  const [note, setNote] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("ck_notes")||"{}")[stay.name] || ""; } catch { return ""; }
+  });
+  const [editing, setEditing] = useState(false);
+
+  const saveNote = val => {
+    setNote(val);
+    try {
+      const all = JSON.parse(localStorage.getItem("ck_notes")||"{}");
+      all[stay.name] = val;
+      localStorage.setItem("ck_notes", JSON.stringify(all));
+    } catch {}
+    setEditing(false);
+  };
+
+  return (
+    <div style={{
+      background:"var(--white)",borderRadius:14,padding:"18px 20px",
+      marginBottom:10,display:"flex",alignItems:"flex-start",gap:14,
+      border:`1px solid ${now?"var(--teal-light)":"var(--sand-mid)"}`,
+      boxShadow:now?"0 4px 20px rgba(46,155,127,0.1)":"none",
+      transition:"box-shadow 0.2s",
+    }}>
+      <div style={{width:44,height:44,borderRadius:"50%",background:stay.color||"var(--teal-mid)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:500,color:"white",flexShrink:0}}>
+        {stay.name[0]?.toUpperCase()}
+      </div>
+      <div style={{flex:1}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
+          <div style={{fontSize:16,fontWeight:400}}>{stay.name}</div>
+          {now && <span style={{fontSize:10,background:"rgba(46,155,127,0.12)",color:"var(--teal)",padding:"2px 8px",borderRadius:20,letterSpacing:"0.5px"}}>Here now</span>}
+        </div>
+        <div style={{fontSize:13,color:"var(--light)",fontWeight:300,marginBottom:stay.note?4:0}}>
+          {fmt(stay.start)} — {fmt(stay.end)}
+        </div>
+        {stay.note && <div style={{fontSize:13,color:"var(--mid)",fontStyle:"italic",fontWeight:300}}>{stay.note}</div>}
+        {editing ? (
+          <textarea
+            defaultValue={note}
+            rows={2}
+            style={{width:"100%",marginTop:8,fontSize:13,fontStyle:"italic",color:"var(--mid)",background:"var(--sand)",border:"none",borderRadius:8,padding:"8px 10px",fontFamily:"'Jost',sans-serif",fontWeight:300,outline:"1.5px solid var(--teal-mid)",resize:"none"}}
+            onBlur={e=>saveNote(e.target.value)}
+            onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&e.currentTarget.blur()}
+            autoFocus
+          />
+        ) : (
+          <div
+            onClick={()=>setEditing(true)}
+            style={{marginTop:8,fontSize:13,color:note?"var(--mid)":"var(--light)",fontStyle:"italic",fontWeight:300,cursor:"pointer",padding:"6px 0",borderRadius:6,transition:"color 0.2s"}}
+          >
+            {note||"Add a note…"}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── CALENDAR ──────────────────────────────────────────────────────────────────
 function CalendarPage({ stays, knownPeople, onSave, onDelete, showToast }) {
   const now = new Date();
@@ -508,9 +631,6 @@ function CalendarPage({ stays, knownPeople, onSave, onDelete, showToast }) {
   const atHouse = stays.filter(s=>s.start<=td&&s.end>=td);
   const upcoming = stays.filter(s=>s.start>td).sort((a,b)=>a.start.localeCompare(b.start)).slice(0,8);
 
-  // Pick sidebar photo based on month
-  const sidePhoto = HOUSE_PHOTOS[month % HOUSE_PHOTOS.length];
-
   return (
     <div className="cal-page">
       <div className="cal-main">
@@ -551,11 +671,7 @@ function CalendarPage({ stays, knownPeople, onSave, onDelete, showToast }) {
       </div>
 
       <div className="cal-sidebar">
-        <div className="sb-photo">
-          <img src={sidePhoto.src} alt={sidePhoto.label}/>
-          <div className="sb-photo-overlay"/>
-          <div className="sb-photo-label">{sidePhoto.label}</div>
-        </div>
+        <SidebarPhoto/>
         <div className="sb-content">
           <WeatherCard/>
           <div className="sb-section">
@@ -628,8 +744,8 @@ function PeoplePage({ stays }) {
 
   return (
     <div className="people-page">
-      <div className="page-title">The Crew</div>
-      <div className="page-sub">Everyone who's made it to Sunset Key</div>
+      <div className="page-title">Profiles</div>
+      <div className="page-sub">People who've been to the house</div>
       {people.length===0?(
         <div style={{textAlign:"center",padding:"60px 0",color:"var(--light)"}}>
           <div style={{fontSize:40,marginBottom:12}}>🌴</div>
@@ -651,7 +767,7 @@ function PeoplePage({ stays }) {
                 <div className="person-card-body">
                   <div className="person-name">{p.name}</div>
                   <div className="person-meta">
-                    {upcomingStays.length>0?`${upcomingStays.length} coming up`:`${pastStays.length} past visit${pastStays.length!==1?"s":""}`}
+                    {upcomingStays.length>0?`Next up: ${fmt(upcomingStays[0].start)}`:(pastStays.length>0?`Last visited: ${fmt(pastStays[pastStays.length-1].start)}`:"No visits yet")}
                   </div>
                   {isEditing?(
                     <textarea className="person-note-input" defaultValue={note} rows={2}
@@ -660,7 +776,7 @@ function PeoplePage({ stays }) {
                       autoFocus/>
                   ):(
                     <div className="person-note" onClick={()=>setEditingNote(p.name)}>
-                      {note||"Add a note about "+p.name+"…"}
+                      {note||"Something about "+p.name+"…"}
                     </div>
                   )}
                   {(upcomingStays.length>0||pastStays.length>0)&&(
@@ -668,8 +784,8 @@ function PeoplePage({ stays }) {
                       {[...upcomingStays.slice(0,2),...(upcomingStays.length===0?pastStays.slice(0,2):[])].map(s=>(
                         <div key={s.id} className="person-stay-row">
                           <div className="psr-dot" style={{background:p.color}}/>
-                          {fmt(s.start)} — {fmt(s.end)}
-                          {s.note&&<span style={{color:"var(--light)"}}>· {s.note}</span>}
+                          {fmt(s.start)} → {fmt(s.end)}
+                          {s.note&&<span style={{color:"var(--light)",fontStyle:"italic"}}> · {s.note}</span>}
                         </div>
                       ))}
                     </div>
@@ -716,11 +832,10 @@ function PhotosPage({ showToast }) {
 
   return (
     <div className="photos-page">
-      <div className="page-title" style={{marginBottom:6}}>The House</div>
-      <div className="page-sub" style={{marginBottom:24}}>16 Sunset Key Dr · Key West, Florida</div>
+      <div className="page-title" style={{marginBottom:6}}>Photos</div>
+      <div className="page-sub" style={{marginBottom:24}}>Add memories from your visits, then see the house below.</div>
 
-      {/* House photo grid */}
-      <div className="photos-house-grid">
+      {/* Upload first */}
         <div className="ph-main">
           <img className="ph-img" src={pool_exterior} alt="Pool & Exterior"/>
           <div className="ph-label">Pool & Exterior</div>
@@ -771,6 +886,17 @@ function PhotosPage({ showToast }) {
             <div style={{fontSize:13,fontWeight:300}}>Upload photos from your visits to see them here.</div>
           </div>
         )}
+      </div>
+
+      {/* House photos below */}
+      <div style={{marginTop:48}}>
+        <div className="photos-section-title" style={{marginBottom:6}}>The House</div>
+        <div className="photos-section-sub" style={{marginBottom:20}}>16 Sunset Key Dr · Key West, Florida</div>
+        <div className="photos-house-grid">
+          <div className="ph-main"><img className="ph-img" src={pool_exterior} alt="Pool & Exterior"/><div className="ph-label">Pool & Exterior</div></div>
+          <div className="ph-cell"><img className="ph-img" src={veranda} alt="The Veranda"/><div className="ph-label">The Veranda</div></div>
+          <div className="ph-cell"><img className="ph-img" src={sunset_pool} alt="Sunset"/><div className="ph-label">Sunset</div></div>
+        </div>
       </div>
     </div>
   );
@@ -838,10 +964,12 @@ export default function App() {
         </div>
         <div className="app-nav">
           <button className={`nav-tab ${tab==="calendar"?"active":""}`} onClick={()=>setTab("calendar")}>Calendar</button>
-          <button className={`nav-tab ${tab==="people"?"active":""}`} onClick={()=>setTab("people")}>The Crew</button>
+          <button className={`nav-tab ${tab==="whos"?"active":""}`} onClick={()=>setTab("whos")}>Who's There</button>
+          <button className={`nav-tab ${tab==="people"?"active":""}`} onClick={()=>setTab("people")}>Profiles</button>
           <button className={`nav-tab ${tab==="photos"?"active":""}`} onClick={()=>setTab("photos")}>Photos</button>
         </div>
         {tab==="calendar"&&<CalendarPage stays={stays} knownPeople={knownPeople} onSave={handleSave} onDelete={handleDelete} showToast={showToast}/>}
+        {tab==="whos"&&<WhosThereTab stays={stays}/>}
         {tab==="people"&&<PeoplePage stays={stays}/>}
         {tab==="photos"&&<PhotosPage showToast={showToast}/>}
       </div>
