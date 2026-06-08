@@ -567,6 +567,41 @@ function WhosThereTab({stays}){
   );
 }
 
+// ── AVATAR HELPERS ────────────────────────────────────────────────────────────
+function getStoredPhoto(name) {
+  try { return JSON.parse(localStorage.getItem("ck_photos")||"{}")[name]||null; } catch { return null; }
+}
+function savePhoto(name, src) {
+  try { const p=JSON.parse(localStorage.getItem("ck_photos")||"{}"); p[name]=src; localStorage.setItem("ck_photos",JSON.stringify(p)); } catch {}
+}
+function PersonAvatar({ name, color }) {
+  const [photo, setPhoto] = useState(()=>getStoredPhoto(name));
+  const inputRef = useRef();
+  const handleFile = e => {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => { savePhoto(name, ev.target.result); setPhoto(ev.target.result); };
+    reader.readAsDataURL(file);
+  };
+  return (
+    <div className="person-card-top" style={{background:`linear-gradient(135deg,${color}22,${color}44)`}}>
+      <div className="person-av-wrap" onClick={()=>inputRef.current?.click()} title="Click to add photo">
+        <input ref={inputRef} type="file" accept="image/*" onChange={handleFile} style={{display:"none"}}/>
+        {photo
+          ? <img className="person-av-img" src={photo} alt={name}/>
+          : <div className="person-av" style={{background:color,width:56,height:56,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:500,color:"white",border:"3px solid rgba(255,255,255,0.4)",boxShadow:"0 4px 12px rgba(0,0,0,0.15)"}}>{name[0]?.toUpperCase()}</div>
+        }
+        <div className="person-av-overlay">📷</div>
+      </div>
+    </div>
+  );
+}
+function WhoAvatar({ name, color }) {
+  const [photo] = useState(()=>getStoredPhoto(name));
+  if (photo) return <img src={photo} alt={name} style={{width:44,height:44,borderRadius:"50%",objectFit:"cover",flexShrink:0,border:`2px solid ${color}`,boxShadow:"0 2px 8px rgba(0,0,0,0.12)"}}/>;
+  return <div style={{width:44,height:44,borderRadius:"50%",background:color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:500,color:"white",flexShrink:0}}>{name[0]?.toUpperCase()}</div>;
+}
+
 function PeoplePage({stays}){
   const td=today();
   const [notes,setNotes]=useState({});
