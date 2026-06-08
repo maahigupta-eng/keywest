@@ -9,7 +9,7 @@ const COLORS = [
   { id:"blue",    hex:"#5BA4CF" },{ id:"terra",   hex:"#C17B5C" },
   { id:"green",   hex:"#6BB89A" },{ id:"golden",  hex:"#D4A843" },
   { id:"orchid",  hex:"#9B7BA8" },{ id:"coral",   hex:"#E06B6B" },
-  { id:"navy",    hex:"#4A6FA5" },{ id:"sage",   hex:"#7A9E7E" },
+  { id:"navy",    hex:"#4A6FA5" },{ id:"sage",    hex:"#7A9E7E" },
   { id:"rose",    hex:"#C2788A" },
 ];
 const DEFAULT_COLOR = "#2E9B7F";
@@ -526,32 +526,25 @@ function WhosThereTab({ stays }) {
         <div className="page-hero-sub">At the house and coming up</div>
       </div>
       <div className="whos-body">
-
-      {atHouse.length > 0 && (
-        <div style={{marginBottom:32}}>
-          <div style={{fontSize:10,fontWeight:400,letterSpacing:"2.5px",textTransform:"uppercase",color:"var(--light)",marginBottom:14}}>At the house now</div>
-          {atHouse.map(s => (
-            <WhoCard key={s.id} stay={s} now={true}/>
-          ))}
-        </div>
-      )}
-
-      {upcoming.length > 0 && (
-        <div>
-          <div style={{fontSize:10,fontWeight:400,letterSpacing:"2.5px",textTransform:"uppercase",color:"var(--light)",marginBottom:14}}>Coming up</div>
-          {upcoming.map(s => (
-            <WhoCard key={s.id} stay={s} now={false}/>
-          ))}
-        </div>
-      )}
-
-      {all.length === 0 && (
-        <div style={{textAlign:"center",padding:"60px 0",color:"var(--light)"}}>
-          <div style={{fontSize:40,marginBottom:12}}>🌴</div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,color:"var(--teal)",marginBottom:6}}>All clear</div>
-          <div style={{fontSize:14,fontWeight:300}}>Nothing planned yet — the house is waiting.</div>
-        </div>
-      )}
+        {atHouse.length > 0 && (
+          <div style={{marginBottom:32}}>
+            <div style={{fontSize:10,fontWeight:400,letterSpacing:"2.5px",textTransform:"uppercase",color:"var(--light)",marginBottom:14}}>At the house now</div>
+            {atHouse.map(s => <WhoCard key={s.id} stay={s} now={true}/>)}
+          </div>
+        )}
+        {upcoming.length > 0 && (
+          <div>
+            <div style={{fontSize:10,fontWeight:400,letterSpacing:"2.5px",textTransform:"uppercase",color:"var(--light)",marginBottom:14}}>Coming up</div>
+            {upcoming.map(s => <WhoCard key={s.id} stay={s} now={false}/>)}
+          </div>
+        )}
+        {all.length === 0 && (
+          <div style={{textAlign:"center",padding:"60px 0",color:"var(--light)"}}>
+            <div style={{fontSize:40,marginBottom:12}}>🌴</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,color:"var(--teal)",marginBottom:6}}>All clear</div>
+            <div style={{fontSize:14,fontWeight:300}}>Nothing planned yet — the house is waiting.</div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -579,7 +572,6 @@ function WhoCard({ stay, now }) {
       marginBottom:10,display:"flex",alignItems:"flex-start",gap:14,
       border:`1px solid ${now?"var(--teal-light)":"var(--sand-mid)"}`,
       boxShadow:now?"0 4px 20px rgba(46,155,127,0.1)":"none",
-      transition:"box-shadow 0.2s",
     }}>
       <div style={{width:44,height:44,borderRadius:"50%",background:stay.color||"var(--teal-mid)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:500,color:"white",flexShrink:0}}>
         {stay.name[0]?.toUpperCase()}
@@ -587,162 +579,25 @@ function WhoCard({ stay, now }) {
       <div style={{flex:1}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
           <div style={{fontSize:16,fontWeight:400}}>{stay.name}</div>
-          {now && <span style={{fontSize:10,background:"rgba(46,155,127,0.12)",color:"var(--teal)",padding:"2px 8px",borderRadius:20,letterSpacing:"0.5px"}}>Here now</span>}
+          {now && <span style={{fontSize:10,background:"rgba(46,155,127,0.12)",color:"var(--teal)",padding:"2px 8px",borderRadius:20}}>Here now</span>}
         </div>
         <div style={{fontSize:13,color:"var(--light)",fontWeight:300,marginBottom:stay.note?4:0}}>
           {fmt(stay.start)} — {fmt(stay.end)}
         </div>
         {stay.note && <div style={{fontSize:13,color:"var(--mid)",fontStyle:"italic",fontWeight:300}}>{stay.note}</div>}
         {editing ? (
-          <textarea
-            defaultValue={note}
-            rows={2}
+          <textarea defaultValue={note} rows={2}
             style={{width:"100%",marginTop:8,fontSize:13,fontStyle:"italic",color:"var(--mid)",background:"var(--sand)",border:"none",borderRadius:8,padding:"8px 10px",fontFamily:"'Jost',sans-serif",fontWeight:300,outline:"1.5px solid var(--teal-mid)",resize:"none"}}
             onBlur={e=>saveNote(e.target.value)}
             onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&e.currentTarget.blur()}
-            autoFocus
-          />
+            autoFocus/>
         ) : (
-          <div
-            onClick={()=>setEditing(true)}
-            style={{marginTop:8,fontSize:13,color:note?"var(--mid)":"var(--light)",fontStyle:"italic",fontWeight:300,cursor:"pointer",padding:"6px 0",borderRadius:6,transition:"color 0.2s"}}
-          >
+          <div onClick={()=>setEditing(true)}
+            style={{marginTop:8,fontSize:13,color:note?"var(--mid)":"var(--light)",fontStyle:"italic",fontWeight:300,cursor:"pointer",padding:"6px 0"}}>
             {note||"Add a note…"}
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-// ── CALENDAR ──────────────────────────────────────────────────────────────────
-function CalendarPage({ stays, knownPeople, onSave, onDelete, showToast }) {
-  const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth());
-  const [addModal, setAddModal] = useState(false);
-  const [editStay, setEditStay] = useState(null);
-  const [detailStay, setDetailStay] = useState(null);
-  const td = today();
-
-  const firstDay = new Date(year,month,1).getDay();
-  const dim = daysInMonth(year,month);
-  const prevDim = daysInMonth(year,month===0?11:month-1);
-  const cells = [];
-  for (let i=firstDay-1;i>=0;i--) cells.push({day:prevDim-i,cur:false});
-  for (let i=1;i<=dim;i++) cells.push({day:i,cur:true});
-  while (cells.length%7!==0) cells.push({day:cells.length-dim-firstDay+1,cur:false});
-
-  // Build per-cell stay segments
-  const cellStays = {};
-  stays.forEach(stay => {
-    cells.forEach((cell,idx) => {
-      if (!cell.cur) return;
-      const cellDate = ds(year,month,cell.day);
-      if (cellDate<stay.start||cellDate>stay.end) return;
-      const isStart=cellDate===stay.start, isEnd=cellDate===stay.end;
-      const col=idx%7;
-      let pos="mid";
-      if (isStart&&isEnd) pos="single";
-      else if (isStart) pos="start";
-      else if (isEnd) pos="end";
-      if (pos==="mid"&&col===0) pos="start";
-      if (pos==="mid"&&col===6) pos="end";
-      if (pos==="start"&&col===6) pos="single";
-      if (!cellStays[idx]) cellStays[idx]=[];
-      cellStays[idx].push({stay,pos});
-    });
-  });
-
-  const prev=()=>{if(month===0){setMonth(11);setYear(y=>y-1);}else setMonth(m=>m-1);};
-  const next=()=>{if(month===11){setMonth(0);setYear(y=>y+1);}else setMonth(m=>m+1);};
-
-  const atHouse = stays.filter(s=>s.start<=td&&s.end>=td);
-  const upcoming = stays.filter(s=>s.start>td).sort((a,b)=>a.start.localeCompare(b.start)).slice(0,8);
-
-  return (
-    <div className="cal-page">
-      <div className="cal-main">
-        <div className="cal-watermark">{MONTH_NAMES[month]}</div>
-        <div className="cal-header">
-          <div className="cal-nav">
-            <button className="btn-nav" onClick={prev}>‹</button>
-            <div className="cal-month-title">{MONTH_NAMES[month]} {year}</div>
-            <button className="btn-nav" onClick={next}>›</button>
-          </div>
-          <button className="btn-add-stay" onClick={()=>setAddModal(true)}>+ Add Stay</button>
-        </div>
-        <div className="cal-day-labels">
-          {DAY_NAMES.map(d=><div key={d} className="day-label">{d}</div>)}
-        </div>
-        <div className="cal-grid">
-          {cells.map((cell,i)=>{
-            const cellDate=cell.cur?ds(year,month,cell.day):null;
-            const isToday=cellDate===td;
-            const segs=cellStays[i]||[];
-            const isEmpty=cell.cur&&segs.length===0;
-            return (
-              <div key={i} className={`cal-cell ${!cell.cur?"other-month":""} ${isToday?"is-today":""} ${isEmpty?"is-empty":""}`}>
-                <div className="cell-date">{cell.day}</div>
-                <div className="stay-bars">
-                  {segs.map(({stay,pos},si)=>(
-                    <div key={stay.id+si} className={`stay-bar bar-${pos}`}
-                      style={{background:stay.color||DEFAULT_COLOR}}
-                      onClick={()=>setDetailStay(stay)}>
-                      <span className="bar-name">{stay.name}{stay.note?` · ${stay.note}`:""}</span>
-                    </div>
-                  ))}
-                  {segs.length>3&&<div className="more-chip">+{segs.length-3}</div>}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="cal-sidebar">
-        <SidebarPhoto/>
-        <div className="sb-content">
-          <WeatherCard/>
-          <div className="sb-section">
-            <div className="sb-label">At the house</div>
-            {atHouse.length===0
-              ?<div className="sb-empty">Nobody home right now 🌴</div>
-              :atHouse.map(s=>(
-                <div key={s.id} className="home-card">
-                  <div className="home-dot" style={{background:s.color||DEFAULT_COLOR}}/>
-                  <div>
-                    <div className="home-name">{s.name}</div>
-                    <div className="home-dates">{fmt(s.start)} — {fmt(s.end)}</div>
-                    {s.note&&<div style={{fontSize:12,color:"var(--mid)",fontStyle:"italic",fontWeight:300,marginTop:2}}>{s.note}</div>}
-                    <div className="home-here">Here now</div>
-                  </div>
-                </div>
-              ))
-            }
-          </div>
-          <div className="sb-section">
-            <div className="sb-label">Coming up</div>
-            {upcoming.length===0
-              ?<div className="sb-empty">Nothing planned yet</div>
-              :upcoming.map(s=>(
-                <div key={s.id} className="coming-item">
-                  <div className="coming-dot" style={{background:s.color||DEFAULT_COLOR}}/>
-                  <div>
-                    <div className="coming-name">{s.name}</div>
-                    <div className="coming-dates">{fmt(s.start)} — {fmt(s.end)}</div>
-                    {s.note&&<div className="coming-note">{s.note}</div>}
-                  </div>
-                </div>
-              ))
-            }
-          </div>
-        </div>
-      </div>
-
-      {addModal&&<StayModal knownPeople={knownPeople} onClose={()=>setAddModal(false)} onSave={async s=>{await onSave(s);showToast("Stay added!");}} onDelete={onDelete}/>}
-      {editStay&&<StayModal stay={editStay} knownPeople={knownPeople} onClose={()=>setEditStay(null)} onSave={async s=>{await onSave(s);showToast("Updated!");}} onDelete={async id=>{await onDelete(id);showToast("Removed.");}}/>}
-      {detailStay&&<DetailModal stay={detailStay} onClose={()=>setDetailStay(null)} onEdit={s=>{setDetailStay(null);setEditStay(s);}} onDelete={async id=>{await onDelete(id);setDetailStay(null);showToast("Removed.");}}/>}
     </div>
   );
 }
@@ -779,56 +634,57 @@ function PeoplePage({ stays }) {
         <div className="page-hero-sub">People who've been to the house</div>
       </div>
       <div className="page-body">
-      {people.length===0?(
-        <div style={{textAlign:"center",padding:"60px 0",color:"var(--light)"}}>
-          <div style={{fontSize:40,marginBottom:12}}>🌴</div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,color:"var(--teal)",marginBottom:6}}>No stays yet</div>
-          <div style={{fontSize:14,fontWeight:300}}>Add a stay from the calendar to get started.</div>
-        </div>
-      ):(
-        <div className="people-grid">
-          {people.map(p=>{
-            const upcomingStays=p.stays.filter(s=>s.end>=td).sort((a,b)=>a.start.localeCompare(b.start));
-            const pastStays=p.stays.filter(s=>s.end<td);
-            const note=notes[p.name]||"";
-            const isEditing=editingNote===p.name;
-            return (
-              <div key={p.name} className="person-card">
-                <div className="person-card-top" style={{background:`linear-gradient(135deg,${p.color}22,${p.color}44)`}}>
-                  <div className="person-av" style={{background:p.color}}>{p.name[0]?.toUpperCase()}</div>
-                </div>
-                <div className="person-card-body">
-                  <div className="person-name">{p.name}</div>
-                  <div className="person-meta">
-                    {upcomingStays.length>0?`Next up: ${fmt(upcomingStays[0].start)}`:(pastStays.length>0?`Last visited: ${fmt(pastStays[pastStays.length-1].start)}`:"No visits yet")}
+        {people.length===0?(
+          <div style={{textAlign:"center",padding:"60px 0",color:"var(--light)"}}>
+            <div style={{fontSize:40,marginBottom:12}}>🌴</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,color:"var(--teal)",marginBottom:6}}>No stays yet</div>
+            <div style={{fontSize:14,fontWeight:300}}>Add a stay from the calendar to get started.</div>
+          </div>
+        ):(
+          <div className="people-grid">
+            {people.map(p=>{
+              const upcomingStays=p.stays.filter(s=>s.end>=td).sort((a,b)=>a.start.localeCompare(b.start));
+              const pastStays=p.stays.filter(s=>s.end<td);
+              const note=notes[p.name]||"";
+              const isEditing=editingNote===p.name;
+              return (
+                <div key={p.name} className="person-card">
+                  <div className="person-card-top" style={{background:`linear-gradient(135deg,${p.color}22,${p.color}44)`}}>
+                    <div className="person-av" style={{background:p.color}}>{p.name[0]?.toUpperCase()}</div>
                   </div>
-                  {isEditing?(
-                    <textarea className="person-note-input" defaultValue={note} rows={2}
-                      onBlur={e=>saveNote(p.name,e.target.value)}
-                      onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&e.currentTarget.blur()}
-                      autoFocus/>
-                  ):(
-                    <div className="person-note" onClick={()=>setEditingNote(p.name)}>
-                      {note||"Something about "+p.name+"…"}
+                  <div className="person-card-body">
+                    <div className="person-name">{p.name}</div>
+                    <div className="person-meta">
+                      {upcomingStays.length>0?`Next up: ${fmt(upcomingStays[0].start)}`:(pastStays.length>0?`Last visited: ${fmt(pastStays[pastStays.length-1].start)}`:"No visits yet")}
                     </div>
-                  )}
-                  {(upcomingStays.length>0||pastStays.length>0)&&(
-                    <div className="person-stays">
-                      {[...upcomingStays.slice(0,2),...(upcomingStays.length===0?pastStays.slice(0,2):[])].map(s=>(
-                        <div key={s.id} className="person-stay-row">
-                          <div className="psr-dot" style={{background:p.color}}/>
-                          {fmt(s.start)} → {fmt(s.end)}
-                          {s.note&&<span style={{color:"var(--light)",fontStyle:"italic"}}> · {s.note}</span>}
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                    {isEditing?(
+                      <textarea className="person-note-input" defaultValue={note} rows={2}
+                        onBlur={e=>saveNote(p.name,e.target.value)}
+                        onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&e.currentTarget.blur()}
+                        autoFocus/>
+                    ):(
+                      <div className="person-note" onClick={()=>setEditingNote(p.name)}>
+                        {note||"Something about "+p.name+"…"}
+                      </div>
+                    )}
+                    {(upcomingStays.length>0||pastStays.length>0)&&(
+                      <div className="person-stays">
+                        {[...upcomingStays.slice(0,2),...(upcomingStays.length===0?pastStays.slice(0,2):[])].map(s=>(
+                          <div key={s.id} className="person-stay-row">
+                            <div className="psr-dot" style={{background:p.color}}/>
+                            {fmt(s.start)} → {fmt(s.end)}
+                            {s.note&&<span style={{color:"var(--light)",fontStyle:"italic"}}> · {s.note}</span>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -843,40 +699,36 @@ function PhotosPage({ showToast }) {
     try{const m=JSON.parse(localStorage.getItem("ck_memories")||"[]");setMemories(m);}catch{}
   },[]);
 
-  const saveMemories = m => {
-    setMemories(m);
-    try{localStorage.setItem("ck_memories",JSON.stringify(m));}catch{showToast("Storage full — try smaller photos.");}
-  };
-
   const handleFiles = files => {
     const arr=Array.from(files).filter(f=>f.type.startsWith("image/"));
     arr.forEach(file=>{
       const reader=new FileReader();
       reader.onload=e=>{
-        const newMem={id:Date.now()+Math.random(),src:e.target.result,name:file.name.replace(/\.[^.]+$/,""),date:new Date().toLocaleDateString("en-US",{month:"short",year:"numeric"})};
-        setMemories(prev=>{const updated=[newMem,...prev];try{localStorage.setItem("ck_memories",JSON.stringify(updated));}catch{showToast("Storage full.");}return updated;});
+        const m={id:Date.now()+Math.random(),src:e.target.result,name:file.name.replace(/\.[^.]+$/,""),date:new Date().toLocaleDateString("en-US",{month:"short",year:"numeric"})};
+        setMemories(prev=>{const u=[m,...prev];try{localStorage.setItem("ck_memories",JSON.stringify(u));}catch{showToast("Storage full.");}return u;});
       };
       reader.readAsDataURL(file);
     });
     if(arr.length) showToast(`${arr.length} photo${arr.length>1?"s":""} added!`);
   };
 
-  const remove = id => saveMemories(memories.filter(m=>m.id!==id));
+  const remove = id => {
+    const m=memories.filter(x=>x.id!==id);
+    setMemories(m);
+    try{localStorage.setItem("ck_memories",JSON.stringify(m));}catch{}
+  };
 
   return (
-    <div className="photos-page">
+    <div>
       <div className="page-hero">
         <div className="page-hero-title">Photos</div>
         <div className="page-hero-sub">Memories from your visits and the house</div>
       </div>
       <div className="photos-body">
-
-      <div className="photos-upload-section">
-        <div className="photos-section-title">Memories</div>
+        <div className="photos-section-title" style={{marginBottom:6}}>Memories</div>
         <div className="photos-section-sub" style={{marginBottom:16}}>Add photos from your visits.</div>
 
-        <div
-          className={`upload-zone ${dragging?"drag-over":""}`}
+        <div className={`upload-zone ${dragging?"drag-over":""}`}
           onClick={()=>inputRef.current?.click()}
           onDragOver={e=>{e.preventDefault();setDragging(true);}}
           onDragLeave={()=>setDragging(false)}
@@ -887,7 +739,7 @@ function PhotosPage({ showToast }) {
           <div className="upload-sub">JPG, PNG, HEIC — any size</div>
         </div>
 
-        {memories.length>0&&(
+        {memories.length>0 ? (
           <div className="memory-grid">
             {memories.map(m=>(
               <div key={m.id} className="memory-card">
@@ -898,30 +750,28 @@ function PhotosPage({ showToast }) {
               </div>
             ))}
           </div>
-        )}
-
-        {memories.length===0&&(
+        ) : (
           <div style={{textAlign:"center",padding:"40px 0",color:"var(--light)"}}>
             <div style={{fontSize:32,marginBottom:10}}>🏖️</div>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:"var(--teal)",marginBottom:4}}>No memories yet</div>
             <div style={{fontSize:13,fontWeight:300}}>Upload photos from your visits to see them here.</div>
           </div>
         )}
-      </div>
 
-      <div style={{marginTop:48}}>
-        <div className="photos-section-title" style={{marginBottom:6}}>The House</div>
-        <div className="photos-section-sub" style={{marginBottom:20}}>16 Sunset Key Dr · Key West, Florida</div>
-        <div className="photos-house-grid">
-          <div className="ph-main"><img className="ph-img" src={pool_exterior} alt="Pool"/><div className="ph-label">Pool & Exterior</div></div>
-          <div className="ph-cell"><img className="ph-img" src={veranda} alt="Veranda"/><div className="ph-label">The Veranda</div></div>
-          <div className="ph-cell"><img className="ph-img" src={sunset_pool} alt="Sunset"/><div className="ph-label">Sunset</div></div>
+        <div style={{marginTop:48}}>
+          <div className="photos-section-title" style={{marginBottom:6}}>The House</div>
+          <div className="photos-section-sub" style={{marginBottom:20}}>16 Sunset Key Dr · Key West, Florida</div>
+          <div className="photos-house-grid">
+            <div className="ph-main"><img className="ph-img" src={pool_exterior} alt="Pool"/><div className="ph-label">Pool & Exterior</div></div>
+            <div className="ph-cell"><img className="ph-img" src={veranda} alt="Veranda"/><div className="ph-label">The Veranda</div></div>
+            <div className="ph-cell"><img className="ph-img" src={sunset_pool} alt="Sunset"/><div className="ph-label">Sunset</div></div>
+          </div>
         </div>
-      </div>
       </div>
     </div>
   );
 }
+
 
 // ── APP ROOT ──────────────────────────────────────────────────────────────────
 function Toast({ msg }) { return <div className={`toast ${msg?"show":""}`}>{msg}</div>; }
