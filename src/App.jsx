@@ -835,27 +835,12 @@ function PhotosPage({ showToast }) {
       <div className="page-title" style={{marginBottom:6}}>Photos</div>
       <div className="page-sub" style={{marginBottom:24}}>Add memories from your visits, then see the house below.</div>
 
-      {/* Upload first */}
-        <div className="ph-main">
-          <img className="ph-img" src={pool_exterior} alt="Pool & Exterior"/>
-          <div className="ph-label">Pool & Exterior</div>
-        </div>
-        <div className="ph-cell">
-          <img className="ph-img" src={veranda} alt="The Veranda"/>
-          <div className="ph-label">The Veranda</div>
-        </div>
-        <div className="ph-cell">
-          <img className="ph-img" src={sunset_pool} alt="Sunset"/>
-          <div className="ph-label">Sunset</div>
-        </div>
-      </div>
-
-      {/* Memories upload */}
       <div className="photos-upload-section">
         <div className="photos-section-title">Memories</div>
-        <div className="photos-section-sub">Add photos from your visits. They stay on this device.</div>
+        <div className="photos-section-sub" style={{marginBottom:16}}>Add photos from your visits.</div>
 
-        <div className={`upload-zone ${dragging?"drag-over":""}`}
+        <div
+          className={`upload-zone ${dragging?"drag-over":""}`}
           onClick={()=>inputRef.current?.click()}
           onDragOver={e=>{e.preventDefault();setDragging(true);}}
           onDragLeave={()=>setDragging(false)}
@@ -888,13 +873,12 @@ function PhotosPage({ showToast }) {
         )}
       </div>
 
-      {/* House photos below */}
       <div style={{marginTop:48}}>
         <div className="photos-section-title" style={{marginBottom:6}}>The House</div>
         <div className="photos-section-sub" style={{marginBottom:20}}>16 Sunset Key Dr · Key West, Florida</div>
         <div className="photos-house-grid">
-          <div className="ph-main"><img className="ph-img" src={pool_exterior} alt="Pool & Exterior"/><div className="ph-label">Pool & Exterior</div></div>
-          <div className="ph-cell"><img className="ph-img" src={veranda} alt="The Veranda"/><div className="ph-label">The Veranda</div></div>
+          <div className="ph-main"><img className="ph-img" src={pool_exterior} alt="Pool"/><div className="ph-label">Pool & Exterior</div></div>
+          <div className="ph-cell"><img className="ph-img" src={veranda} alt="Veranda"/><div className="ph-label">The Veranda</div></div>
           <div className="ph-cell"><img className="ph-img" src={sunset_pool} alt="Sunset"/><div className="ph-label">Sunset</div></div>
         </div>
       </div>
