@@ -7,11 +7,11 @@ const subStore = () =>
     token: process.env.NETLIFY_TOKEN,
   });
 
-const json = (body, status = 200) => ({
-  statusCode: status,
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(body),
-});
+const json = (body, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
 
 export default async (req) => {
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
@@ -21,11 +21,10 @@ export default async (req) => {
 
   if (!contact?.trim()) return json({ error: "Contact required" }, 400);
 
-  // Save to Blobs
   const s = subStore();
   const existing = (await s.get("all", { type: "json" }).catch(() => null)) || [];
   const key = contact.trim().toLowerCase();
-  const already = existing.find(e => e.contact.toLowerCase() === key);
+  const already = existing.find((e) => e.contact.toLowerCase() === key);
 
   if (!already) {
     const sub = {
@@ -38,36 +37,73 @@ export default async (req) => {
     };
     await s.setJSON("all", [...existing, sub]);
 
-    // Send welcome email if email signup + Resend key available
+    // Send welcome email via Resend fetch API
     if (contactType === "email" && process.env.RESEND_API_KEY) {
-      await fetch("https://api.resend.com/emails", {
+      const alertsList = [
+        stayAlerts ? "Stay alerts — when someone books at the house" : null,
+        flightReminders ? "Trip reminders — a nudge a few days before your stay" : null,
+      ]
+        .filter(Boolean)
+        .map((item) => `<li style="margin-bottom:6px;">${item}</li>`)
+        .join("");
+
+      const emailRes = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
         },
         body: JSON.stringify({
-          from: "Casa Kallman <noreply@keywestkallman.netlify.app>",
-          to: contact.trim(),
-          subject: "You're on the Casa Kallman list 🌴",
+          from: "Casa Kallman <onboarding@resend.dev>",
+          to: [contact.trim()],
+          subject: "You're on the list 🌴",
           html: `
-            <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:480px;margin:0 auto;color:#0E1A16;">
-              <div style="background:#1A6B5A;padding:32px 32px 24px;border-radius:12px 12px 0 0;">
-                <p style="font-family:Georgia,serif;font-size:32px;color:#FDFAF6;margin:0;font-weight:300;font-style:italic;">Casa Kallman</p>
-                <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin:6px 0 0;">Key West · Sunset Key</p>
-              </div>
-              <div style="background:#FDFAF6;padding:28px 32px 32px;border-radius:0 0 12px 12px;border:1px solid #E8DCC8;border-top:none;">
-                <p style="font-size:15px;line-height:1.6;color:#5A7068;font-weight:300;">You're signed up for:</p>
-                <ul style="font-size:14px;line-height:2;color:#0E1A16;font-weight:300;padding-left:18px;">
-                  ${stayAlerts ? "<li>Stay alerts — when someone books at the house</li>" : ""}
-                  ${flightReminders ? "<li>Trip reminders — a nudge before your stay</li>" : ""}
-                </ul>
-                <p style="font-size:13px;color:#96B0A8;margin-top:24px;font-weight:300;">See you in Key West. 🌴</p>
-              </div>
-            </div>
-          `,
+<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#F5EFE3;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 20px;">
+    <tr><td align="center">
+      <table width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;">
+
+        <!-- Header -->
+        <tr>
+          <td style="background:#1A6B5A;border-radius:16px 16px 0 0;padding:36px 40px 28px;">
+            <p style="margin:0 0 4px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.45);">Key West · Sunset Key</p>
+            <p style="margin:0;font-family:Georgia,serif;font-size:38px;font-weight:300;font-style:italic;color:#FDFAF6;line-height:1.1;">Casa Kallman</p>
+          </td>
+        </tr>
+
+        <!-- Body -->
+        <tr>
+          <td style="background:#FDFAF6;padding:32px 40px 28px;border-left:1px solid #E8DCC8;border-right:1px solid #E8DCC8;">
+            <p style="margin:0 0 18px;font-size:22px;font-family:Georgia,serif;font-style:italic;font-weight:300;color:#1A6B5A;">Hello — you're in.</p>
+            <p style="margin:0 0 16px;font-size:14px;line-height:1.7;color:#5A7068;font-weight:300;">Thanks for signing up. We'll keep you in the loop about what's happening at the house.</p>
+            ${alertsList ? `
+            <p style="margin:0 0 10px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#96B0A8;">You're signed up for</p>
+            <ul style="margin:0 0 20px;padding-left:18px;font-size:14px;line-height:1.8;color:#0E1A16;font-weight:300;">
+              ${alertsList}
+            </ul>` : ""}
+            <p style="margin:0;font-size:13px;color:#96B0A8;font-weight:300;font-style:italic;">See you in Key West. 🌴</p>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="background:#EEF8F5;border-radius:0 0 16px 16px;padding:16px 40px;border:1px solid #E8DCC8;border-top:none;">
+            <p style="margin:0;font-size:11px;color:#96B0A8;font-weight:300;">16 Sunset Key Dr · Key West, FL · Casa Kallman family calendar</p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
         }),
-      }).catch(() => {});
+      });
+
+      const emailData = await emailRes.json();
+      console.log("Resend response:", JSON.stringify(emailData));
     }
   }
 
