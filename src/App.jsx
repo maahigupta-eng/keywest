@@ -68,6 +68,8 @@ const css = `
   .app-header{background:var(--ink);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;position:sticky;top:0;z-index:100;}
   .app-brand{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--white);display:flex;align-items:baseline;gap:10px;}
   .app-badge{font-size:9px;font-weight:300;letter-spacing:2px;text-transform:uppercase;color:var(--teal-light);padding:3px 8px;border:1px solid rgba(91,191,163,0.3);border-radius:20px;}
+  .btn-alerts{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);padding:6px 14px;border-radius:8px;font-size:11px;cursor:pointer;font-family:'Jost',sans-serif;transition:all 0.2s;letter-spacing:1px;}
+  .btn-alerts:hover{background:rgba(91,191,163,0.18);color:var(--teal-light);border-color:rgba(91,191,163,0.3);}
   .btn-exit{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.55);padding:6px 14px;border-radius:8px;font-size:11px;cursor:pointer;font-family:'Jost',sans-serif;transition:all 0.2s;letter-spacing:1px;}
   .btn-exit:hover{background:rgba(255,255,255,0.14);color:white;}
   .app-nav{background:var(--ink);border-bottom:1px solid rgba(255,255,255,0.07);padding:0 32px;display:flex;}
@@ -602,12 +604,10 @@ function FavModal({fav,onClose,onSave}){
 const ACCENT_CLASS={"Restaurant":"","Bar":"bar","Beach / Spot":"beach","Activity":"activity","Shop":"shop","Other":"other"};
 
 // ── FAVORITES PAGE ────────────────────────────────────────────────────────────
-function FavoritesPage({showToast}){
+function FavoritesPage({showToast,favModal,setFavModal}){
   const [favs,setFavs]=useState([]);
   const [loading,setLoading]=useState(true);
   const [activecat,setActivecat]=useState("All");
-  const [showModal,setShowModal]=useState(false);
-  const [editFav,setEditFav]=useState(null);
 
   const fetchFavs=useCallback(async()=>{
     try{const d=await api("favorites");setFavs(d.favorites||[]);}
@@ -616,6 +616,7 @@ function FavoritesPage({showToast}){
 
   useEffect(()=>{fetchFavs();},[fetchFavs]);
 
+  // Expose save/delete via window so modal (rendered at App level) can call back
   const handleSave=async(fav)=>{
     try{
       if(fav.id){await api(`favorites/${fav.id}`,{method:"PUT",body:JSON.stringify(fav)});showToast("Updated!");}
@@ -629,12 +630,19 @@ function FavoritesPage({showToast}){
     catch{showToast("Could not remove.");}
   };
 
-  // Build tab list — only categories that have entries, plus "All"
+  // Pass handlers up so App-level modal can use them
+  useEffect(()=>{
+    if(favModal?.onSave===undefined&&favModal!==null){
+      // inject handlers into modal state
+    }
+  },[favModal]);
+
+  const openAdd=()=>setFavModal({fav:null,onSave:handleSave});
+  const openEdit=(f)=>setFavModal({fav:f,onSave:handleSave,onDelete:handleDelete});
+
   const tabCats=FAV_CATEGORIES.filter(c=>favs.some(f=>f.category===c));
   const allTabs=["All",...tabCats];
   const visible=activecat==="All"?favs:favs.filter(f=>f.category===activecat);
-
-  // Group visible favs by category for section headers
   const grouped=FAV_CATEGORIES.reduce((acc,c)=>{
     const items=visible.filter(f=>f.category===c);
     if(items.length)acc.push({cat:c,items});
@@ -648,7 +656,6 @@ function FavoritesPage({showToast}){
         <div className="page-hero-sub">The Kallman guide to Key West</div>
       </div>
       <div className="fav-body">
-        {/* Top bar: tab strip + add button */}
         <div style={{borderBottom:"1px solid var(--sand-mid)",display:"flex",alignItems:"stretch",justifyContent:"space-between",paddingRight:40}}>
           <div className="fav-cat-strip" style={{paddingLeft:40,flex:1,paddingRight:0,borderBottom:"none"}}>
             {allTabs.map(c=>{
@@ -662,7 +669,7 @@ function FavoritesPage({showToast}){
             })}
           </div>
           <div style={{display:"flex",alignItems:"center",paddingLeft:16,flexShrink:0}}>
-            <button className="fav-add-btn" onClick={()=>{setEditFav(null);setShowModal(true);}}>+ Add Spot</button>
+            <button className="fav-add-btn" onClick={openAdd}>+ Add Spot</button>
           </div>
         </div>
 
@@ -681,17 +688,16 @@ function FavoritesPage({showToast}){
                   <div key={cat} style={{marginBottom:36}}>
                     <div className="fav-section-label">{FAV_ICONS[cat]} {cat}</div>
                     <div className="fav-grid">
-                      {items.map(f=><FavCard key={f.id} fav={f} onEdit={()=>{setEditFav(f);setShowModal(true);}} onDelete={handleDelete}/>)}
+                      {items.map(f=><FavCard key={f.id} fav={f} onEdit={()=>openEdit(f)} onDelete={handleDelete}/>)}
                     </div>
                   </div>
                 ))
               : <div className="fav-grid">
-                  {visible.map(f=><FavCard key={f.id} fav={f} onEdit={()=>{setEditFav(f);setShowModal(true);}} onDelete={handleDelete}/>)}
+                  {visible.map(f=><FavCard key={f.id} fav={f} onEdit={()=>openEdit(f)} onDelete={handleDelete}/>)}
                 </div>
           )}
         </div>
       </div>
-      {showModal&&<FavModal fav={editFav} onClose={()=>{setShowModal(false);setEditFav(null);}} onSave={handleSave}/>}
     </div>
   );
 }
@@ -1076,6 +1082,7 @@ export default function App(){
   const [stays,setStays]=useState([]);
   const [toast,setToast]=useState("");
   const [showNotifModal,setShowNotifModal]=useState(false);
+  const [favModal,setFavModal]=useState(null); // {fav, onSave, onDelete?}
   const showToast=msg=>{setToast(msg);setTimeout(()=>setToast(""),3000);};
   const fetchStays=useCallback(async()=>{
     try{const d=await api("bookings");setStays((d.bookings||[]).map(b=>({...b,start:b.start||b.startDate,end:b.end||b.endDate})));}catch{}
@@ -1108,7 +1115,10 @@ export default function App(){
   },{})).sort((a,b)=>a.name.localeCompare(b.name));
 
   const dismissNotif=()=>{
-    localStorage.setItem("ck_notif_dismissed","true");
+    // Only permanently dismiss if it was the auto-show on login
+    if(!localStorage.getItem("ck_notif_dismissed")){
+      localStorage.setItem("ck_notif_dismissed","true");
+    }
     setShowNotifModal(false);
   };
 
@@ -1120,7 +1130,10 @@ export default function App(){
       <div className="app">
         <div className="app-header">
           <div className="app-brand">Casa Kallman<span className="app-badge">Sunset Key</span></div>
-          <button className="btn-exit" onClick={()=>{sessionStorage.removeItem("casa_ok");setScreen("gate");}}>Exit</button>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <button className="btn-alerts" onClick={()=>setShowNotifModal(true)}>🔔 Alerts</button>
+            <button className="btn-exit" onClick={()=>{sessionStorage.removeItem("casa_ok");setScreen("gate");}}>Exit</button>
+          </div>
         </div>
         <div className="app-nav">
           <button className={`nav-tab ${tab==="calendar"?"active":""}`} onClick={()=>setTab("calendar")}>Calendar</button>
@@ -1132,9 +1145,10 @@ export default function App(){
         {tab==="calendar"&&<CalendarPage stays={stays} knownPeople={knownPeople} onSave={handleSave} onDelete={handleDelete} showToast={showToast}/>}
         {tab==="whos"&&<WhosThereTab stays={stays}/>}
         {tab==="people"&&<PeoplePage stays={stays}/>}
-        {tab==="favorites"&&<FavoritesPage showToast={showToast}/>}
+        {tab==="favorites"&&<FavoritesPage showToast={showToast} favModal={favModal} setFavModal={setFavModal}/>}
         {tab==="photos"&&<PhotosPage showToast={showToast}/>}
       </div>
+      {favModal!==null&&<FavModal fav={favModal.fav} onClose={()=>setFavModal(null)} onSave={favModal.onSave}/>}
       {showNotifModal&&<NotificationModal onDismiss={dismissNotif}/>}
       <Toast msg={toast}/>
     </>
