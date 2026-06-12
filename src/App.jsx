@@ -260,7 +260,8 @@ const css = `
   .fav-section-label::after{content:'';flex:1;height:1px;background:var(--sand-mid);}
   .fav-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;}
   .fav-card{background:var(--white);border-radius:14px;overflow:hidden;border:1px solid var(--sand-mid);transition:box-shadow 0.2s,transform 0.2s;}
-  .fav-card.placeholder{opacity:0.55;pointer-events:none;}
+  .fav-card.placeholder{opacity:0.6;cursor:pointer;}
+  .fav-card.placeholder:hover{opacity:0.85;box-shadow:0 4px 16px rgba(14,26,22,0.08);transform:translateY(-1px);}
   .fav-card:hover:not(.placeholder){box-shadow:0 6px 22px rgba(14,26,22,0.1);transform:translateY(-2px);}
   .fav-card-accent{height:3px;background:linear-gradient(90deg,var(--teal),var(--teal-light));}
   .fav-card-accent.bar{background:linear-gradient(90deg,#E8894A,#D4A843);}
@@ -408,7 +409,6 @@ function GateScreen({onEnter}){
 function NotificationModal({onDismiss}){
   const [stayAlerts,setStayAlerts]=useState(true);
   const [flightReminders,setFlightReminders]=useState(false);
-  const [contactType,setContactType]=useState("email");
   const [contact,setContact]=useState("");
   const [saving,setSaving]=useState(false);
   const [done,setDone]=useState(false);
@@ -416,7 +416,7 @@ function NotificationModal({onDismiss}){
     if(!contact.trim())return;
     setSaving(true);
     try{
-      await api("subscribe",{method:"POST",body:JSON.stringify({contact:contact.trim(),contactType,stayAlerts,flightReminders})});
+      await api("subscribe",{method:"POST",body:JSON.stringify({contact:contact.trim(),contactType:"email",stayAlerts,flightReminders})});
       setDone(true);
       setTimeout(onDismiss,2000);
     }catch{onDismiss();}
@@ -437,11 +437,11 @@ function NotificationModal({onDismiss}){
         <button className="notif-dismiss" onClick={onDismiss}>×</button>
         <div className="notif-icon">🔔</div>
         <div className="notif-title">Stay in the loop</div>
-        <div className="notif-sub">Get a nudge when someone adds a stay or your trip is coming up. Totally optional.</div>
+        <div className="notif-sub">Get a nudge when someone plans a visit or your trip is coming up.</div>
         <div className="notif-options">
           <div className={`notif-option ${stayAlerts?"selected":""}`} onClick={()=>setStayAlerts(v=>!v)}>
             <div className="notif-option-check">{stayAlerts?"✓":""}</div>
-            <div><div className="notif-option-text">Stay alerts</div><div className="notif-option-desc">Someone added or changed a booking</div></div>
+            <div><div className="notif-option-text">Stay alerts</div><div className="notif-option-desc">When someone adds or changes a visit</div></div>
           </div>
           <div className={`notif-option ${flightReminders?"selected":""}`} onClick={()=>setFlightReminders(v=>!v)}>
             <div className="notif-option-check">{flightReminders?"✓":""}</div>
@@ -449,17 +449,12 @@ function NotificationModal({onDismiss}){
           </div>
         </div>
         <div className="field-group" style={{marginBottom:14}}>
-          <label className="field-label">Contact</label>
-          <div className="notif-contact-row">
-            <button className={`notif-contact-type ${contactType==="email"?"active":""}`} onClick={()=>setContactType("email")}>Email</button>
-            <button className={`notif-contact-type ${contactType==="phone"?"active":""}`} onClick={()=>setContactType("phone")}>Text</button>
-          </div>
-          <input className="field-input" style={{marginTop:8}} type={contactType==="email"?"email":"tel"}
-            placeholder={contactType==="email"?"your@email.com":"+1 (305) 000-0000"}
+          <label className="field-label">Email</label>
+          <input className="field-input" type="email" placeholder="your@email.com"
             value={contact} onChange={e=>setContact(e.target.value)} onKeyDown={e=>e.key==="Enter"&&save()}/>
         </div>
         <div className="notif-actions">
-          <button className="notif-skip" onClick={onDismiss}>Skip for now</button>
+          <button className="notif-skip" onClick={onDismiss}>Maybe later</button>
           <button className="btn-notif-save" onClick={save} disabled={saving||!contact.trim()}>{saving?"Saving...":"Sign me up"}</button>
         </div>
       </div>
@@ -540,16 +535,10 @@ function StayModal({stay,knownPeople,onClose,onSave,onDelete}){
 
         {/* Alerts */}
         <div className="field-group">
-          <div className="toggle-row" onClick={()=>setSendAlerts(v=>!v)} style={{marginBottom:8}}>
+          <div className="toggle-row" onClick={()=>setSendAlerts(v=>!v)}>
             <div className={`toggle-check ${sendAlerts?"on":""}`}>{sendAlerts?"✓":""}</div>
-            <div><div className="toggle-label">📣 Send stay alerts to subscribers</div><div className="toggle-desc">Notify family members who signed up</div></div>
+            <div><div className="toggle-label">📬 Let the family know</div><div className="toggle-desc">Send an alert to anyone signed up for notifications</div></div>
           </div>
-          {sendAlerts&&(
-            <div className="toggle-row" onClick={()=>setIsSurprise(v=>!v)}>
-              <div className={`toggle-check ${isSurprise?"on":""}`}>{isSurprise?"✓":""}</div>
-              <div><div className="toggle-label">🤫 This is a surprise visit</div><div className="toggle-desc">Alert goes out but hides the name</div></div>
-            </div>
-          )}
         </div>
 
         <div className="modal-actions">
@@ -636,7 +625,7 @@ function FavModal({fav,onClose,onSave}){
 function FavCard({fav,onEdit,onDelete,isPlaceholder}){
   const accent=ACCENT_CLASS[fav.category]||"";
   return(
-    <div className={`fav-card${isPlaceholder?" placeholder":""}`}>
+    <div className={`fav-card${isPlaceholder?" placeholder":""}`} onClick={isPlaceholder?onEdit:undefined}>
       <div className={`fav-card-accent ${accent}`}/>
       <div className="fav-card-body">
         <div className="fav-card-top">
@@ -647,7 +636,7 @@ function FavCard({fav,onEdit,onDelete,isPlaceholder}){
           {!isPlaceholder&&<div className="fav-cat-badge">{fav.category}</div>}
         </div>
         {fav.note&&<div className="fav-note">{fav.note}</div>}
-        {isPlaceholder&&<div className="fav-placeholder-tag">Suggestion — add your own</div>}
+        {isPlaceholder&&<div className="fav-placeholder-tag">Tap to add →</div>}
         {!isPlaceholder&&(
           <div className="fav-card-footer">
             {fav.link?<a className="fav-link" href={fav.link} target="_blank" rel="noopener noreferrer">Open ↗</a>:<span/>}
@@ -684,7 +673,7 @@ function FavoritesPage({showToast,setFavModal}){
     try{await api(`favorites/${id}`,{method:"DELETE"});showToast("Removed.");fetchFavs();}
     catch{showToast("Could not remove.");}
   };
-  const openAdd=()=>setFavModal({fav:null,onSave:handleSave});
+  const openAdd=(prefill=null)=>setFavModal({fav:prefill?{name:prefill.name,category:prefill.category,note:prefill.note,link:prefill.link||""}:null,onSave:handleSave});
   const openEdit=(f)=>setFavModal({fav:f,onSave:handleSave});
 
   // Always show all 6 category tabs
@@ -700,9 +689,12 @@ function FavoritesPage({showToast,setFavModal}){
 
   return(
     <div>
-      <div className="page-hero">
-        <div className="page-hero-title">Local Favorites</div>
-        <div className="page-hero-sub">The Kallman guide to Key West</div>
+      <div className="page-hero" style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:16}}>
+        <div>
+          <div className="page-hero-title">Local Favorites</div>
+          <div className="page-hero-sub">The Kallman guide to Key West</div>
+        </div>
+        <button className="fav-add-btn" style={{marginBottom:4,flexShrink:0}} onClick={openAdd}>+ Add a spot</button>
       </div>
       <div className="fav-body">
         <div className="fav-cat-strip">
@@ -717,7 +709,6 @@ function FavoritesPage({showToast,setFavModal}){
               );
             })}
           </div>
-          <button className="fav-add-btn" onClick={openAdd}>+ Add</button>
         </div>
 
         <div className="fav-content">
@@ -727,10 +718,18 @@ function FavoritesPage({showToast,setFavModal}){
             sections.map(({cat,real,placeholders})=>(
               <div key={cat} style={{marginBottom:28}}>
                 <div className="fav-section-label">{FAV_ICONS[cat]} {cat}</div>
-                <div className="fav-grid">
+                {real.length>0&&<div className="fav-grid" style={{marginBottom:placeholders.length?10:0}}>
                   {real.map(f=><FavCard key={f.id} fav={f} onEdit={()=>openEdit(f)} onDelete={handleDelete} isPlaceholder={false}/>)}
-                  {placeholders.map(f=><FavCard key={f.id} fav={f} onEdit={()=>{}} onDelete={()=>{}} isPlaceholder={true}/>)}
-                </div>
+                </div>}
+                {placeholders.length>0&&(
+                  <>
+                    {real.length>0&&<div style={{fontSize:9,letterSpacing:"1.5px",textTransform:"uppercase",color:"var(--light)",margin:"8px 0 8px"}}>Suggestions — add your own</div>}
+                    {real.length===0&&<div style={{fontSize:9,letterSpacing:"1.5px",textTransform:"uppercase",color:"var(--light)",marginBottom:8}}>Suggestions — add your own</div>}
+                    <div className="fav-grid">
+                      {placeholders.map(f=><FavCard key={f.id} fav={f} onEdit={()=>openAdd(f)} onDelete={()=>{}} isPlaceholder={true}/>)}
+                    </div>
+                  </>
+                )}
               </div>
             ))
           )}
@@ -1053,7 +1052,7 @@ export default function App(){
   },{})).sort((a,b)=>a.name.localeCompare(b.name));
 
   const dismissNotif=()=>{
-    if(!localStorage.getItem("ck_notif_dismissed"))localStorage.setItem("ck_notif_dismissed","true");
+    localStorage.setItem("ck_notif_dismissed","true"); // always mark dismissed on any close
     setShowNotifModal(false);
   };
 
