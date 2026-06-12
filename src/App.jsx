@@ -17,6 +17,8 @@ const HOUSE_PHOTOS = [
 ];
 const WX={0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",51:"🌦️",61:"🌧️",80:"🌦️",95:"⛈️"};
 const VIBES={0:"Perfect day for the pool.",1:"Great beach weather.",2:"Nice island day.",3:"Cloudy but warm.",51:"Light rain — porch weather.",61:"Rain today.",80:"Afternoon showers.",95:"Storm rolling in."};
+const FAV_CATEGORIES = ["Restaurant","Bar","Beach / Spot","Activity","Shop","Other"];
+const FAV_ICONS = {"Restaurant":"🍽️","Bar":"🍹","Beach / Spot":"🏖️","Activity":"🤿","Shop":"🛍️","Other":"📍"};
 
 const api = async (path,opts={}) => {
   const res = await fetch(`/api/${path}`,{headers:{"Content-Type":"application/json"},...opts});
@@ -73,7 +75,6 @@ const css = `
   .nav-tab.active{color:var(--teal-light);border-bottom-color:var(--teal-light);}
   .nav-tab:hover:not(.active){color:rgba(255,255,255,0.7);}
 
-  /* Page hero header */
   .page-hero{background:linear-gradient(135deg,var(--teal) 0%,var(--teal-mid) 60%,#3aab90 100%);padding:48px 40px 40px;}
   .page-hero-title{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:300;color:var(--white);margin-bottom:6px;}
   .page-hero-sub{font-size:13px;color:rgba(255,255,255,0.45);font-weight:300;letter-spacing:0.5px;}
@@ -81,7 +82,6 @@ const css = `
   .whos-body{padding:32px 40px 60px;max-width:700px;margin:0 auto;width:100%;}
   .photos-body{padding:36px 40px 60px;max-width:1100px;margin:0 auto;width:100%;}
 
-  /* Calendar */
   .cal-page{display:grid;grid-template-columns:1fr 300px;flex:1;}
   .cal-main{
     padding:28px 32px;
@@ -121,7 +121,6 @@ const css = `
   .stay-bar.bar-mid .bar-name,.stay-bar.bar-end .bar-name{display:none;}
   .more-chip{font-size:10px;color:var(--light);padding:2px 4px;font-weight:300;}
 
-  /* Sidebar */
   .cal-sidebar{background:var(--white);border-left:1px solid var(--sand-mid);padding:0;overflow-y:auto;display:flex;flex-direction:column;}
   .sb-photo{height:160px;overflow:hidden;position:relative;flex-shrink:0;cursor:pointer;}
   .sb-photo img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.6s ease;}
@@ -154,7 +153,6 @@ const css = `
   .coming-dates{font-size:11px;color:var(--light);font-weight:300;}
   .coming-note{font-size:11px;color:var(--mid);font-style:italic;margin-top:2px;font-weight:300;}
 
-  /* People grid */
   .people-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;}
   .person-card{background:var(--white);border-radius:16px;overflow:hidden;border:1px solid var(--sand-mid);transition:box-shadow 0.2s,transform 0.2s;}
   .person-card:hover{box-shadow:0 8px 32px rgba(14,26,22,0.1);transform:translateY(-2px);}
@@ -176,7 +174,6 @@ const css = `
   .person-av-overlay{position:absolute;inset:0;border-radius:50%;background:rgba(14,26,22,0.45);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;font-size:18px;}
   .person-av-wrap:hover .person-av-overlay{opacity:1;}
 
-  /* Photos */
   .photos-house-grid{display:grid;grid-template-columns:1.6fr 1fr;grid-template-rows:340px 220px;gap:6px;border-radius:16px;overflow:hidden;margin-bottom:40px;}
   .ph-main{grid-row:1/3;position:relative;overflow:hidden;}
   .ph-cell{position:relative;overflow:hidden;}
@@ -228,16 +225,72 @@ const css = `
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--teal);color:white;padding:11px 26px;border-radius:50px;font-size:13px;z-index:2000;transition:transform 0.3s;pointer-events:none;white-space:nowrap;font-family:'Jost',sans-serif;}
   .toast.show{transform:translateX(-50%) translateY(0);}
 
+  /* Favorites */
+  .fav-body{padding:36px 40px 60px;max-width:960px;margin:0 auto;width:100%;}
+  .fav-cats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px;}
+  .fav-cat-btn{padding:7px 16px;border-radius:20px;font-size:11px;font-weight:400;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border:1.5px solid var(--sand-dark);background:transparent;color:var(--mid);font-family:'Jost',sans-serif;transition:all 0.18s;}
+  .fav-cat-btn.active{background:var(--teal);border-color:var(--teal);color:white;}
+  .fav-cat-btn:hover:not(.active){border-color:var(--teal-mid);color:var(--teal);}
+  .fav-add-btn{margin-left:auto;padding:9px 22px;background:var(--sunset);color:white;border:none;border-radius:50px;font-size:11px;font-weight:400;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Jost',sans-serif;transition:all 0.2s;box-shadow:0 4px 14px rgba(232,137,74,0.28);}
+  .fav-add-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(232,137,74,0.38);}
+  .fav-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+  .fav-card{background:var(--white);border-radius:14px;padding:18px 20px;border:1px solid var(--sand-mid);transition:box-shadow 0.2s,transform 0.2s;cursor:pointer;}
+  .fav-card:hover{box-shadow:0 6px 24px rgba(14,26,22,0.09);transform:translateY(-2px);}
+  .fav-card-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;}
+  .fav-icon{font-size:24px;flex-shrink:0;margin-top:1px;}
+  .fav-name{font-size:16px;font-weight:400;color:var(--ink);line-height:1.25;margin-bottom:3px;}
+  .fav-cat-badge{font-size:10px;font-weight:300;letter-spacing:1.5px;text-transform:uppercase;color:var(--light);}
+  .fav-note{font-size:13px;color:var(--mid);font-weight:300;line-height:1.5;font-style:italic;}
+  .fav-link{display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-size:11px;font-weight:400;letter-spacing:1px;text-transform:uppercase;color:var(--teal-mid);text-decoration:none;border-bottom:1px solid rgba(46,155,127,0.3);padding-bottom:1px;transition:color 0.15s,border-color 0.15s;}
+  .fav-link:hover{color:var(--teal);border-color:var(--teal);}
+  .fav-card-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--sand-mid);}
+  .fav-action-btn{padding:5px 12px;font-size:10px;letter-spacing:1px;text-transform:uppercase;border-radius:6px;cursor:pointer;font-family:'Jost',sans-serif;transition:all 0.15s;border:1.5px solid var(--sand-dark);background:transparent;color:var(--mid);}
+  .fav-action-btn:hover{border-color:var(--teal-mid);color:var(--teal);}
+  .fav-action-btn.del:hover{border-color:#ffb3b3;color:#c0392b;}
+  .fav-empty{text-align:center;padding:60px 0;color:var(--light);}
+
+  /* Notification modal */
+  .notif-modal{background:var(--white);border-radius:24px;padding:40px 38px 36px;max-width:480px;width:94%;box-shadow:0 32px 80px rgba(0,0,0,0.22);animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);position:relative;}
+  .notif-dismiss{position:absolute;top:16px;right:18px;background:none;border:none;cursor:pointer;font-size:18px;color:var(--light);line-height:1;padding:4px;transition:color 0.15s;}
+  .notif-dismiss:hover{color:var(--ink);}
+  .notif-icon{font-size:38px;margin-bottom:14px;}
+  .notif-title{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:400;color:var(--teal);margin-bottom:6px;line-height:1.15;}
+  .notif-sub{font-size:13px;color:var(--mid);font-weight:300;margin-bottom:26px;line-height:1.6;}
+  .notif-options{display:flex;flex-direction:column;gap:12px;margin-bottom:22px;}
+  .notif-option{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:12px;border:1.5px solid var(--sand-mid);cursor:pointer;transition:all 0.18s;background:transparent;}
+  .notif-option.selected{border-color:var(--teal-mid);background:var(--seafoam);}
+  .notif-option-check{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--sand-dark);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all 0.15s;}
+  .notif-option.selected .notif-option-check{background:var(--teal-mid);border-color:var(--teal-mid);color:white;}
+  .notif-option-text{font-size:13px;font-weight:400;color:var(--ink);margin-bottom:2px;}
+  .notif-option-desc{font-size:12px;color:var(--light);font-weight:300;}
+  .notif-contact-row{display:flex;gap:10px;margin-bottom:8px;}
+  .notif-contact-type{padding:8px 14px;border-radius:8px;font-size:11px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'Jost',sans-serif;border:1.5px solid var(--sand-dark);background:transparent;color:var(--mid);transition:all 0.15s;}
+  .notif-contact-type.active{background:var(--teal);border-color:var(--teal);color:white;}
+  .notif-actions{display:flex;gap:10px;align-items:center;}
+  .notif-skip{background:none;border:none;font-size:12px;color:var(--light);cursor:pointer;font-family:'Jost',sans-serif;letter-spacing:0.5px;text-decoration:underline;text-underline-offset:3px;}
+  .notif-skip:hover{color:var(--mid);}
+  .btn-notif-save{flex:1;padding:12px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:11px;font-weight:400;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'Jost',sans-serif;transition:background 0.2s;}
+  .btn-notif-save:hover{background:var(--teal-mid);}
+  .btn-notif-save:disabled{opacity:0.5;cursor:not-allowed;}
+
+  /* Cat selector in fav modal */
+  .cat-selector{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+  .cat-opt{padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;border:1.5px solid var(--sand-dark);background:transparent;color:var(--mid);font-family:'Jost',sans-serif;transition:all 0.15s;}
+  .cat-opt.sel{background:var(--teal);border-color:var(--teal);color:white;}
+  .cat-opt:hover:not(.sel){border-color:var(--teal-mid);color:var(--teal);}
+
   @media(max-width:800px){
     .cal-page{grid-template-columns:1fr;}
     .cal-sidebar{display:none;}
-    .cal-main,.page-body,.whos-body,.photos-body{padding:16px;}
+    .cal-main,.page-body,.whos-body,.photos-body,.fav-body{padding:16px;}
     .app-header,.app-nav{padding:0 16px;}
     .cal-cell{min-height:72px;}
     .photos-house-grid{grid-template-columns:1fr;grid-template-rows:auto;height:auto;}
     .ph-main{grid-row:auto;}
     .page-hero{padding:32px 20px 28px;}
     .page-hero-title{font-size:36px;}
+    .fav-grid{grid-template-columns:1fr;}
+    .notif-modal{padding:32px 24px 28px;}
   }
 `;
 
@@ -303,6 +356,93 @@ function GateScreen({onEnter}){
         <input className="gate-input" type="password" placeholder="· · · · · · · ·" value={code} onChange={e=>setCode(e.target.value)} onKeyDown={e=>e.key==="Enter"&&enter()} autoFocus/>
         {err&&<div className="gate-error">{err}</div>}
         <button className="gate-btn" onClick={enter} disabled={loading}>{loading?"...":"Enter"}</button>
+      </div>
+    </div>
+  );
+}
+
+// ── NOTIFICATION MODAL ────────────────────────────────────────────────────────
+function NotificationModal({onDismiss}){
+  const [stayAlerts,setStayAlerts]=useState(true);
+  const [flightReminders,setFlightReminders]=useState(false);
+  const [contactType,setContactType]=useState("email");
+  const [contact,setContact]=useState("");
+  const [saving,setSaving]=useState(false);
+  const [done,setDone]=useState(false);
+
+  const save=async()=>{
+    if(!contact.trim())return;
+    setSaving(true);
+    try{
+      await api("subscribe",{
+        method:"POST",
+        body:JSON.stringify({contact:contact.trim(),contactType,stayAlerts,flightReminders})
+      });
+      setDone(true);
+      setTimeout(onDismiss,1800);
+    }catch{
+      // fail silently — don't block the user
+      onDismiss();
+    }finally{setSaving(false);}
+  };
+
+  if(done){
+    return(
+      <div className="modal-overlay">
+        <div className="notif-modal" style={{textAlign:"center"}}>
+          <div style={{fontSize:42,marginBottom:14}}>🌴</div>
+          <div className="notif-title">You're in.</div>
+          <div className="notif-sub">We'll keep you in the loop.</div>
+        </div>
+      </div>
+    );
+  }
+
+  return(
+    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onDismiss()}>
+      <div className="notif-modal">
+        <button className="notif-dismiss" onClick={onDismiss}>×</button>
+        <div className="notif-icon">🔔</div>
+        <div className="notif-title">Stay in the loop</div>
+        <div className="notif-sub">Get a nudge when someone adds a stay or when your trip is coming up. Totally optional — skip anytime.</div>
+        <div className="notif-options">
+          <div className={`notif-option ${stayAlerts?"selected":""}`} onClick={()=>setStayAlerts(v=>!v)}>
+            <div className="notif-option-check">{stayAlerts?"✓":""}</div>
+            <div>
+              <div className="notif-option-text">Stay alerts</div>
+              <div className="notif-option-desc">Someone added or changed a booking at the house</div>
+            </div>
+          </div>
+          <div className={`notif-option ${flightReminders?"selected":""}`} onClick={()=>setFlightReminders(v=>!v)}>
+            <div className="notif-option-check">{flightReminders?"✓":""}</div>
+            <div>
+              <div className="notif-option-text">Trip reminders</div>
+              <div className="notif-option-desc">A reminder a few days before your stay starts</div>
+            </div>
+          </div>
+        </div>
+        <div className="field-group" style={{marginBottom:16}}>
+          <label className="field-label">Contact</label>
+          <div className="notif-contact-row">
+            <button className={`notif-contact-type ${contactType==="email"?"active":""}`} onClick={()=>setContactType("email")}>Email</button>
+            <button className={`notif-contact-type ${contactType==="phone"?"active":""}`} onClick={()=>setContactType("phone")}>Text</button>
+          </div>
+          <input
+            className="field-input"
+            style={{marginTop:8}}
+            type={contactType==="email"?"email":"tel"}
+            placeholder={contactType==="email"?"your@email.com":"+1 (305) 000-0000"}
+            value={contact}
+            onChange={e=>setContact(e.target.value)}
+            onKeyDown={e=>e.key==="Enter"&&save()}
+          />
+        </div>
+        <div className="notif-actions">
+          <button className="notif-skip" onClick={onDismiss}>Skip for now</button>
+          <button className="btn-notif-save" onClick={save} disabled={saving||!contact.trim()}>
+            {saving?"Saving...":"Sign me up"}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -386,6 +526,144 @@ function DetailModal({stay,onClose,onEdit,onDelete}){
           <button className="btn-save" onClick={()=>{onClose();onEdit(stay);}}>Edit</button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── FAVORITES MODAL ───────────────────────────────────────────────────────────
+function FavModal({fav,onClose,onSave}){
+  const isEdit=!!fav?.id;
+  const [name,setName]=useState(fav?.name||"");
+  const [category,setCategory]=useState(fav?.category||"Restaurant");
+  const [note,setNote]=useState(fav?.note||"");
+  const [link,setLink]=useState(fav?.link||"");
+  const [loading,setLoading]=useState(false);
+  const save=async()=>{
+    if(!name.trim())return;
+    setLoading(true);
+    try{
+      await onSave({id:fav?.id,name:name.trim(),category,note,link:link.trim()});
+      onClose();
+    }finally{setLoading(false);}
+  };
+  return(
+    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal">
+        <div className="modal-title">{isEdit?"Edit Spot":"Add a Spot"}</div>
+        <div className="field-group">
+          <label className="field-label">Name</label>
+          <input className="field-input" value={name} onChange={e=>setName(e.target.value)} placeholder="Blue Heaven, Fort Zach..." autoFocus/>
+        </div>
+        <div className="field-group">
+          <label className="field-label">Category</label>
+          <div className="cat-selector">
+            {FAV_CATEGORIES.map(c=>(
+              <button key={c} className={`cat-opt ${category===c?"sel":""}`} onClick={()=>setCategory(c)}>{FAV_ICONS[c]} {c}</button>
+            ))}
+          </div>
+        </div>
+        <div className="field-group">
+          <label className="field-label">Notes</label>
+          <input className="field-input" value={note} onChange={e=>setNote(e.target.value)} placeholder="Get the lobster benedict, go early..."/>
+        </div>
+        <div className="field-group">
+          <label className="field-label">Link (optional)</label>
+          <input className="field-input" value={link} onChange={e=>setLink(e.target.value)} placeholder="https://..."/>
+        </div>
+        <div className="modal-actions">
+          <button className="btn-cancel" onClick={onClose}>Cancel</button>
+          <button className="btn-save" onClick={save} disabled={loading||!name.trim()}>{loading?"Saving...":"Save"}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── FAVORITES PAGE ────────────────────────────────────────────────────────────
+function FavoritesPage({showToast}){
+  const [favs,setFavs]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [activecat,setActivecat]=useState("All");
+  const [showModal,setShowModal]=useState(false);
+  const [editFav,setEditFav]=useState(null);
+
+  const fetchFavs=useCallback(async()=>{
+    try{const d=await api("favorites");setFavs(d.favorites||[]);}
+    catch{}finally{setLoading(false);}
+  },[]);
+
+  useEffect(()=>{fetchFavs();},[fetchFavs]);
+
+  const handleSave=async(fav)=>{
+    try{
+      if(fav.id){
+        await api(`favorites/${fav.id}`,{method:"PUT",body:JSON.stringify(fav)});
+        showToast("Updated!");
+      }else{
+        await api("favorites",{method:"POST",body:JSON.stringify(fav)});
+        showToast("Added!");
+      }
+      fetchFavs();
+    }catch{showToast("Something went wrong.");}
+  };
+
+  const handleDelete=async(id)=>{
+    try{await api(`favorites/${id}`,{method:"DELETE"});showToast("Removed.");fetchFavs();}
+    catch{showToast("Could not remove.");}
+  };
+
+  const cats=["All",...FAV_CATEGORIES.filter(c=>favs.some(f=>f.category===c))];
+  const visible=activecat==="All"?favs:favs.filter(f=>f.category===activecat);
+
+  return(
+    <div>
+      <div className="page-hero">
+        <div className="page-hero-title">Local Favorites</div>
+        <div className="page-hero-sub">The Kallman guide to Key West</div>
+      </div>
+      <div className="fav-body">
+        <div className="fav-cats">
+          {cats.map(c=>(
+            <button key={c} className={`fav-cat-btn ${activecat===c?"active":""}`} onClick={()=>setActivecat(c)}>{c}</button>
+          ))}
+          <button className="fav-add-btn" onClick={()=>{setEditFav(null);setShowModal(true);}}>+ Add Spot</button>
+        </div>
+
+        {loading?(
+          <div style={{textAlign:"center",padding:"40px 0",color:"var(--light)",fontSize:13}}>Loading...</div>
+        ):visible.length===0?(
+          <div className="fav-empty">
+            <div style={{fontSize:36,marginBottom:12}}>{activecat==="All"?"🌴":"🔍"}</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,color:"var(--teal)",marginBottom:6}}>
+              {activecat==="All"?"Nothing here yet":"Nothing in this category"}
+            </div>
+            <div style={{fontSize:13,fontWeight:300,maxWidth:260,margin:"0 auto"}}>
+              {activecat==="All"?"Add your first Key West favorite — a restaurant, beach, dive spot, anything worth sharing.":"Try a different category or add one."}
+            </div>
+          </div>
+        ):(
+          <div className="fav-grid">
+            {visible.map(f=>(
+              <div key={f.id} className="fav-card">
+                <div className="fav-card-top">
+                  <div className="fav-icon">{FAV_ICONS[f.category]||"📍"}</div>
+                  <div>
+                    <div className="fav-name">{f.name}</div>
+                    <div className="fav-cat-badge">{f.category}</div>
+                  </div>
+                </div>
+                {f.note&&<div className="fav-note">{f.note}</div>}
+                {f.link&&<a className="fav-link" href={f.link} target="_blank" rel="noopener noreferrer">Open ↗</a>}
+                <div className="fav-card-actions">
+                  <button className="fav-action-btn" onClick={()=>{setEditFav(f);setShowModal(true);}}>Edit</button>
+                  <button className="fav-action-btn del" onClick={()=>{if(window.confirm("Remove this spot?"))handleDelete(f.id);}}>Remove</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      {showModal&&<FavModal fav={editFav} onClose={()=>{setShowModal(false);setEditFav(null);}} onSave={handleSave}/>}
     </div>
   );
 }
@@ -567,39 +845,38 @@ function WhosThereTab({stays}){
   );
 }
 
-// ── AVATAR HELPERS ────────────────────────────────────────────────────────────
-function getStoredPhoto(name) {
-  try { return JSON.parse(localStorage.getItem("ck_photos")||"{}")[name]||null; } catch { return null; }
+function getStoredPhoto(name){
+  try{return JSON.parse(localStorage.getItem("ck_photos")||"{}")[name]||null;}catch{return null;}
 }
-function savePhoto(name, src) {
-  try { const p=JSON.parse(localStorage.getItem("ck_photos")||"{}"); p[name]=src; localStorage.setItem("ck_photos",JSON.stringify(p)); } catch {}
+function savePhoto(name,src){
+  try{const p=JSON.parse(localStorage.getItem("ck_photos")||"{}");p[name]=src;localStorage.setItem("ck_photos",JSON.stringify(p));}catch{}
 }
-function PersonAvatar({ name, color }) {
-  const [photo, setPhoto] = useState(()=>getStoredPhoto(name));
-  const inputRef = useRef();
-  const handleFile = e => {
-    const file = e.target.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => { savePhoto(name, ev.target.result); setPhoto(ev.target.result); };
+function PersonAvatar({name,color}){
+  const [photo,setPhoto]=useState(()=>getStoredPhoto(name));
+  const inputRef=useRef();
+  const handleFile=e=>{
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{savePhoto(name,ev.target.result);setPhoto(ev.target.result);};
     reader.readAsDataURL(file);
   };
-  return (
+  return(
     <div className="person-card-top" style={{background:`linear-gradient(135deg,${color}22,${color}44)`}}>
       <div className="person-av-wrap" onClick={()=>inputRef.current?.click()} title="Click to add photo">
         <input ref={inputRef} type="file" accept="image/*" onChange={handleFile} style={{display:"none"}}/>
         {photo
-          ? <img className="person-av-img" src={photo} alt={name}/>
-          : <div className="person-av" style={{background:color,width:56,height:56,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:500,color:"white",border:"3px solid rgba(255,255,255,0.4)",boxShadow:"0 4px 12px rgba(0,0,0,0.15)"}}>{name[0]?.toUpperCase()}</div>
+          ?<img className="person-av-img" src={photo} alt={name}/>
+          :<div className="person-av" style={{background:color,width:56,height:56,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:500,color:"white",border:"3px solid rgba(255,255,255,0.4)",boxShadow:"0 4px 12px rgba(0,0,0,0.15)"}}>{name[0]?.toUpperCase()}</div>
         }
         <div className="person-av-overlay">📷</div>
       </div>
     </div>
   );
 }
-function WhoAvatar({ name, color }) {
-  const [photo] = useState(()=>getStoredPhoto(name));
-  if (photo) return <img src={photo} alt={name} style={{width:44,height:44,borderRadius:"50%",objectFit:"cover",flexShrink:0,border:`2px solid ${color}`,boxShadow:"0 2px 8px rgba(0,0,0,0.12)"}}/>;
-  return <div style={{width:44,height:44,borderRadius:"50%",background:color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:500,color:"white",flexShrink:0}}>{name[0]?.toUpperCase()}</div>;
+function WhoAvatar({name,color}){
+  const [photo]=useState(()=>getStoredPhoto(name));
+  if(photo)return<img src={photo} alt={name} style={{width:44,height:44,borderRadius:"50%",objectFit:"cover",flexShrink:0,border:`2px solid ${color}`,boxShadow:"0 2px 8px rgba(0,0,0,0.12)"}}/>;
+  return<div style={{width:44,height:44,borderRadius:"50%",background:color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:500,color:"white",flexShrink:0}}>{name[0]?.toUpperCase()}</div>;
 }
 
 function PeoplePage({stays}){
@@ -741,13 +1018,23 @@ export default function App(){
   const [tab,setTab]=useState("calendar");
   const [stays,setStays]=useState([]);
   const [toast,setToast]=useState("");
+  const [showNotifModal,setShowNotifModal]=useState(false);
   const showToast=msg=>{setToast(msg);setTimeout(()=>setToast(""),3000);};
   const fetchStays=useCallback(async()=>{
     try{const d=await api("bookings");setStays((d.bookings||[]).map(b=>({...b,start:b.start||b.startDate,end:b.end||b.endDate})));}catch{}
   },[]);
   useEffect(()=>{if(sessionStorage.getItem("casa_ok")==="true")setScreen("app");},[]);
   useEffect(()=>{if(screen==="app")fetchStays();},[screen,fetchStays]);
-  const handleEnter=()=>{sessionStorage.setItem("casa_ok","true");setScreen("app");};
+
+  const handleEnter=()=>{
+    sessionStorage.setItem("casa_ok","true");
+    setScreen("app");
+    // Show notif modal if never dismissed
+    if(!localStorage.getItem("ck_notif_dismissed")){
+      setTimeout(()=>setShowNotifModal(true),600);
+    }
+  };
+
   const handleSave=async stay=>{
     try{
       const body={name:stay.name,startDate:stay.start,endDate:stay.end,note:stay.note||"",color:stay.color,visibility:"family"};
@@ -763,6 +1050,11 @@ export default function App(){
     return acc;
   },{})).sort((a,b)=>a.name.localeCompare(b.name));
 
+  const dismissNotif=()=>{
+    localStorage.setItem("ck_notif_dismissed","true");
+    setShowNotifModal(false);
+  };
+
   if(screen==="gate")return(<><style>{css}</style><GateScreen onEnter={handleEnter}/></>);
 
   return(
@@ -777,13 +1069,16 @@ export default function App(){
           <button className={`nav-tab ${tab==="calendar"?"active":""}`} onClick={()=>setTab("calendar")}>Calendar</button>
           <button className={`nav-tab ${tab==="whos"?"active":""}`} onClick={()=>setTab("whos")}>Who's There</button>
           <button className={`nav-tab ${tab==="people"?"active":""}`} onClick={()=>setTab("people")}>Profiles</button>
+          <button className={`nav-tab ${tab==="favorites"?"active":""}`} onClick={()=>setTab("favorites")}>Favorites</button>
           <button className={`nav-tab ${tab==="photos"?"active":""}`} onClick={()=>setTab("photos")}>Photos</button>
         </div>
         {tab==="calendar"&&<CalendarPage stays={stays} knownPeople={knownPeople} onSave={handleSave} onDelete={handleDelete} showToast={showToast}/>}
         {tab==="whos"&&<WhosThereTab stays={stays}/>}
         {tab==="people"&&<PeoplePage stays={stays}/>}
+        {tab==="favorites"&&<FavoritesPage showToast={showToast}/>}
         {tab==="photos"&&<PhotosPage showToast={showToast}/>}
       </div>
+      {showNotifModal&&<NotificationModal onDismiss={dismissNotif}/>}
       <Toast msg={toast}/>
     </>
   );
