@@ -226,28 +226,46 @@ const css = `
   .toast.show{transform:translateX(-50%) translateY(0);}
 
   /* Favorites */
-  .fav-body{padding:36px 40px 60px;max-width:960px;margin:0 auto;width:100%;}
-  .fav-cats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px;}
-  .fav-cat-btn{padding:7px 16px;border-radius:20px;font-size:11px;font-weight:400;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border:1.5px solid var(--sand-dark);background:transparent;color:var(--mid);font-family:'Jost',sans-serif;transition:all 0.18s;}
-  .fav-cat-btn.active{background:var(--teal);border-color:var(--teal);color:white;}
-  .fav-cat-btn:hover:not(.active){border-color:var(--teal-mid);color:var(--teal);}
-  .fav-add-btn{margin-left:auto;padding:9px 22px;background:var(--sunset);color:white;border:none;border-radius:50px;font-size:11px;font-weight:400;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Jost',sans-serif;transition:all 0.2s;box-shadow:0 4px 14px rgba(232,137,74,0.28);}
+  .fav-body{padding:0 0 60px;max-width:100%;}
+  .fav-header-bar{padding:24px 40px 0;max-width:960px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  .fav-add-btn{padding:10px 24px;background:var(--sunset);color:white;border:none;border-radius:50px;font-size:11px;font-weight:400;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Jost',sans-serif;transition:all 0.2s;box-shadow:0 4px 14px rgba(232,137,74,0.28);flex-shrink:0;}
   .fav-add-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(232,137,74,0.38);}
-  .fav-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
-  .fav-card{background:var(--white);border-radius:14px;padding:18px 20px;border:1px solid var(--sand-mid);transition:box-shadow 0.2s,transform 0.2s;cursor:pointer;}
-  .fav-card:hover{box-shadow:0 6px 24px rgba(14,26,22,0.09);transform:translateY(-2px);}
-  .fav-card-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;}
-  .fav-icon{font-size:24px;flex-shrink:0;margin-top:1px;}
-  .fav-name{font-size:16px;font-weight:400;color:var(--ink);line-height:1.25;margin-bottom:3px;}
-  .fav-cat-badge{font-size:10px;font-weight:300;letter-spacing:1.5px;text-transform:uppercase;color:var(--light);}
-  .fav-note{font-size:13px;color:var(--mid);font-weight:300;line-height:1.5;font-style:italic;}
-  .fav-link{display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-size:11px;font-weight:400;letter-spacing:1px;text-transform:uppercase;color:var(--teal-mid);text-decoration:none;border-bottom:1px solid rgba(46,155,127,0.3);padding-bottom:1px;transition:color 0.15s,border-color 0.15s;}
-  .fav-link:hover{color:var(--teal);border-color:var(--teal);}
-  .fav-card-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--sand-mid);}
-  .fav-action-btn{padding:5px 12px;font-size:10px;letter-spacing:1px;text-transform:uppercase;border-radius:6px;cursor:pointer;font-family:'Jost',sans-serif;transition:all 0.15s;border:1.5px solid var(--sand-dark);background:transparent;color:var(--mid);}
+  .fav-cat-strip{display:flex;gap:0;border-bottom:1px solid var(--sand-mid);padding:0 40px;max-width:100%;overflow-x:auto;scrollbar-width:none;}
+  .fav-cat-strip::-webkit-scrollbar{display:none;}
+  .fav-cat-tab{padding:14px 20px;font-size:11px;font-weight:400;letter-spacing:2px;text-transform:uppercase;cursor:pointer;color:var(--light);border-bottom:2px solid transparent;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;border-bottom:2px solid transparent;font-family:'Jost',sans-serif;transition:all 0.18s;display:flex;align-items:center;gap:7px;}
+  .fav-cat-tab.active{color:var(--teal);border-bottom-color:var(--teal);}
+  .fav-cat-tab:hover:not(.active){color:var(--mid);}
+  .fav-cat-count{font-size:10px;background:var(--sand-mid);color:var(--mid);padding:2px 7px;border-radius:10px;font-weight:400;}
+  .fav-cat-tab.active .fav-cat-count{background:rgba(26,107,90,0.12);color:var(--teal);}
+  .fav-content{padding:28px 40px 0;max-width:960px;margin:0 auto;}
+  .fav-section-label{font-size:10px;font-weight:400;letter-spacing:2.5px;text-transform:uppercase;color:var(--light);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+  .fav-section-label::after{content:'';flex:1;height:1px;background:var(--sand-mid);}
+  .fav-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;}
+  .fav-card{background:var(--white);border-radius:16px;overflow:hidden;border:1px solid var(--sand-mid);transition:box-shadow 0.2s,transform 0.2s;}
+  .fav-card:hover{box-shadow:0 8px 28px rgba(14,26,22,0.1);transform:translateY(-2px);}
+  .fav-card-accent{height:4px;background:linear-gradient(90deg,var(--teal),var(--teal-light));}
+  .fav-card-accent.bar{background:linear-gradient(90deg,#E8894A,#D4A843);}
+  .fav-card-accent.beach{background:linear-gradient(90deg,#5BA4CF,#6BB89A);}
+  .fav-card-accent.activity{background:linear-gradient(90deg,#C17B5C,#E8894A);}
+  .fav-card-accent.shop{background:linear-gradient(90deg,#9B7BA8,#C2788A);}
+  .fav-card-accent.other{background:linear-gradient(90deg,var(--sand-dark),var(--mid));}
+  .fav-card-body{padding:16px 18px 14px;}
+  .fav-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px;}
+  .fav-icon{font-size:22px;flex-shrink:0;}
+  .fav-cat-badge{font-size:10px;font-weight:300;letter-spacing:1.5px;text-transform:uppercase;color:var(--light);background:var(--sand);padding:3px 8px;border-radius:20px;}
+  .fav-name{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:400;color:var(--ink);line-height:1.2;margin-bottom:6px;}
+  .fav-note{font-size:13px;color:var(--mid);font-weight:300;line-height:1.55;}
+  .fav-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid var(--sand-mid);}
+  .fav-link{font-size:11px;font-weight:400;letter-spacing:1px;text-transform:uppercase;color:var(--teal-mid);text-decoration:none;transition:color 0.15s;}
+  .fav-link:hover{color:var(--teal);}
+  .fav-card-actions{display:flex;gap:6px;}
+  .fav-action-btn{padding:4px 10px;font-size:10px;letter-spacing:1px;text-transform:uppercase;border-radius:6px;cursor:pointer;font-family:'Jost',sans-serif;transition:all 0.15s;border:1.5px solid var(--sand-dark);background:transparent;color:var(--mid);}
   .fav-action-btn:hover{border-color:var(--teal-mid);color:var(--teal);}
   .fav-action-btn.del:hover{border-color:#ffb3b3;color:#c0392b;}
-  .fav-empty{text-align:center;padding:60px 0;color:var(--light);}
+  .fav-empty{text-align:center;padding:70px 0;color:var(--light);}
+  .fav-empty-icon{font-size:40px;margin-bottom:14px;}
+  .fav-empty-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--teal);margin-bottom:6px;}
+  .fav-empty-sub{font-size:13px;font-weight:300;max-width:240px;margin:0 auto;line-height:1.6;}
 
   /* Notification modal */
   .notif-modal{background:var(--white);border-radius:24px;padding:40px 38px 36px;max-width:480px;width:94%;box-shadow:0 32px 80px rgba(0,0,0,0.22);animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);position:relative;}
@@ -282,7 +300,9 @@ const css = `
   @media(max-width:800px){
     .cal-page{grid-template-columns:1fr;}
     .cal-sidebar{display:none;}
-    .cal-main,.page-body,.whos-body,.photos-body,.fav-body{padding:16px;}
+    .cal-main,.page-body,.whos-body,.photos-body{padding:16px;}
+    .fav-header-bar,.fav-content{padding-left:16px;padding-right:16px;}
+    .fav-cat-strip{padding-left:16px;}
     .app-header,.app-nav{padding:0 16px;}
     .cal-cell{min-height:72px;}
     .photos-house-grid{grid-template-columns:1fr;grid-template-rows:auto;height:auto;}
@@ -579,6 +599,8 @@ function FavModal({fav,onClose,onSave}){
   );
 }
 
+const ACCENT_CLASS={"Restaurant":"","Bar":"bar","Beach / Spot":"beach","Activity":"activity","Shop":"shop","Other":"other"};
+
 // ── FAVORITES PAGE ────────────────────────────────────────────────────────────
 function FavoritesPage({showToast}){
   const [favs,setFavs]=useState([]);
@@ -596,13 +618,8 @@ function FavoritesPage({showToast}){
 
   const handleSave=async(fav)=>{
     try{
-      if(fav.id){
-        await api(`favorites/${fav.id}`,{method:"PUT",body:JSON.stringify(fav)});
-        showToast("Updated!");
-      }else{
-        await api("favorites",{method:"POST",body:JSON.stringify(fav)});
-        showToast("Added!");
-      }
+      if(fav.id){await api(`favorites/${fav.id}`,{method:"PUT",body:JSON.stringify(fav)});showToast("Updated!");}
+      else{await api("favorites",{method:"POST",body:JSON.stringify(fav)});showToast("Added!");}
       fetchFavs();
     }catch{showToast("Something went wrong.");}
   };
@@ -612,8 +629,17 @@ function FavoritesPage({showToast}){
     catch{showToast("Could not remove.");}
   };
 
-  const cats=["All",...FAV_CATEGORIES.filter(c=>favs.some(f=>f.category===c))];
+  // Build tab list — only categories that have entries, plus "All"
+  const tabCats=FAV_CATEGORIES.filter(c=>favs.some(f=>f.category===c));
+  const allTabs=["All",...tabCats];
   const visible=activecat==="All"?favs:favs.filter(f=>f.category===activecat);
+
+  // Group visible favs by category for section headers
+  const grouped=FAV_CATEGORIES.reduce((acc,c)=>{
+    const items=visible.filter(f=>f.category===c);
+    if(items.length)acc.push({cat:c,items});
+    return acc;
+  },[]);
 
   return(
     <div>
@@ -622,48 +648,79 @@ function FavoritesPage({showToast}){
         <div className="page-hero-sub">The Kallman guide to Key West</div>
       </div>
       <div className="fav-body">
-        <div className="fav-cats">
-          {cats.map(c=>(
-            <button key={c} className={`fav-cat-btn ${activecat===c?"active":""}`} onClick={()=>setActivecat(c)}>{c}</button>
-          ))}
-          <button className="fav-add-btn" onClick={()=>{setEditFav(null);setShowModal(true);}}>+ Add Spot</button>
+        {/* Top bar: tab strip + add button */}
+        <div style={{borderBottom:"1px solid var(--sand-mid)",display:"flex",alignItems:"stretch",justifyContent:"space-between",paddingRight:40}}>
+          <div className="fav-cat-strip" style={{paddingLeft:40,flex:1,paddingRight:0,borderBottom:"none"}}>
+            {allTabs.map(c=>{
+              const count=c==="All"?favs.length:favs.filter(f=>f.category===c).length;
+              return(
+                <button key={c} className={`fav-cat-tab ${activecat===c?"active":""}`} onClick={()=>setActivecat(c)}>
+                  {c==="All"?"All":FAV_ICONS[c]+" "+c}
+                  <span className="fav-cat-count">{count}</span>
+                </button>
+              );
+            })}
+          </div>
+          <div style={{display:"flex",alignItems:"center",paddingLeft:16,flexShrink:0}}>
+            <button className="fav-add-btn" onClick={()=>{setEditFav(null);setShowModal(true);}}>+ Add Spot</button>
+          </div>
         </div>
 
-        {loading?(
-          <div style={{textAlign:"center",padding:"40px 0",color:"var(--light)",fontSize:13}}>Loading...</div>
-        ):visible.length===0?(
-          <div className="fav-empty">
-            <div style={{fontSize:36,marginBottom:12}}>{activecat==="All"?"🌴":"🔍"}</div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,color:"var(--teal)",marginBottom:6}}>
-              {activecat==="All"?"Nothing here yet":"Nothing in this category"}
+        <div className="fav-content">
+          {loading?(
+            <div style={{textAlign:"center",padding:"40px 0",color:"var(--light)",fontSize:13,fontStyle:"italic"}}>Loading the list...</div>
+          ):visible.length===0?(
+            <div className="fav-empty">
+              <div className="fav-empty-icon">{activecat==="All"?"🌴":"🔍"}</div>
+              <div className="fav-empty-title">{activecat==="All"?"Start the list":"Nothing here yet"}</div>
+              <div className="fav-empty-sub">{activecat==="All"?"Add your first Key West favorite — a restaurant, beach, dive bar, anything worth coming back to.":"Try a different category or add one."}</div>
             </div>
-            <div style={{fontSize:13,fontWeight:300,maxWidth:260,margin:"0 auto"}}>
-              {activecat==="All"?"Add your first Key West favorite — a restaurant, beach, dive spot, anything worth sharing.":"Try a different category or add one."}
-            </div>
-          </div>
-        ):(
-          <div className="fav-grid">
-            {visible.map(f=>(
-              <div key={f.id} className="fav-card">
-                <div className="fav-card-top">
-                  <div className="fav-icon">{FAV_ICONS[f.category]||"📍"}</div>
-                  <div>
-                    <div className="fav-name">{f.name}</div>
-                    <div className="fav-cat-badge">{f.category}</div>
+          ):(
+            activecat==="All"
+              ? grouped.map(({cat,items})=>(
+                  <div key={cat} style={{marginBottom:36}}>
+                    <div className="fav-section-label">{FAV_ICONS[cat]} {cat}</div>
+                    <div className="fav-grid">
+                      {items.map(f=><FavCard key={f.id} fav={f} onEdit={()=>{setEditFav(f);setShowModal(true);}} onDelete={handleDelete}/>)}
+                    </div>
                   </div>
+                ))
+              : <div className="fav-grid">
+                  {visible.map(f=><FavCard key={f.id} fav={f} onEdit={()=>{setEditFav(f);setShowModal(true);}} onDelete={handleDelete}/>)}
                 </div>
-                {f.note&&<div className="fav-note">{f.note}</div>}
-                {f.link&&<a className="fav-link" href={f.link} target="_blank" rel="noopener noreferrer">Open ↗</a>}
-                <div className="fav-card-actions">
-                  <button className="fav-action-btn" onClick={()=>{setEditFav(f);setShowModal(true);}}>Edit</button>
-                  <button className="fav-action-btn del" onClick={()=>{if(window.confirm("Remove this spot?"))handleDelete(f.id);}}>Remove</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+          )}
+        </div>
       </div>
       {showModal&&<FavModal fav={editFav} onClose={()=>{setShowModal(false);setEditFav(null);}} onSave={handleSave}/>}
+    </div>
+  );
+}
+
+function FavCard({fav,onEdit,onDelete}){
+  const accent=ACCENT_CLASS[fav.category]||"";
+  return(
+    <div className="fav-card">
+      <div className={`fav-card-accent ${accent}`}/>
+      <div className="fav-card-body">
+        <div className="fav-card-top">
+          <div style={{display:"flex",alignItems:"center",gap:8,flex:1,minWidth:0}}>
+            <span className="fav-icon">{FAV_ICONS[fav.category]||"📍"}</span>
+            <div className="fav-name">{fav.name}</div>
+          </div>
+          <div className="fav-cat-badge">{fav.category}</div>
+        </div>
+        {fav.note&&<div className="fav-note">{fav.note}</div>}
+        <div className="fav-card-footer">
+          {fav.link
+            ?<a className="fav-link" href={fav.link} target="_blank" rel="noopener noreferrer">Open ↗</a>
+            :<span/>
+          }
+          <div className="fav-card-actions">
+            <button className="fav-action-btn" onClick={onEdit}>Edit</button>
+            <button className="fav-action-btn del" onClick={()=>{if(window.confirm("Remove this spot?"))onDelete(fav.id);}}>×</button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
