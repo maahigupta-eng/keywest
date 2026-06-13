@@ -118,19 +118,70 @@ const css = `
   .cal-day-labels{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px;position:relative;z-index:1;}
   .day-label{text-align:center;font-size:9px;font-weight:400;letter-spacing:1.5px;text-transform:uppercase;color:var(--light);padding:4px 0;}
   .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;position:relative;z-index:1;}
-  .cal-cell{min-height:72px;background:rgba(253,250,246,0.96);border-radius:8px;padding:6px 4px 4px;display:flex;flex-direction:column;border:1px solid rgba(255,255,255,0.6);position:relative;overflow:hidden;transition:border-color 0.15s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.12),0 1px 0 rgba(255,255,255,0.8) inset;}
+  .cal-cell{min-height:120px;background:rgba(253,250,246,0.96);border-radius:8px;padding:6px 0 4px;display:flex;flex-direction:column;border:1px solid rgba(255,255,255,0.6);position:relative;overflow:visible;transition:border-color 0.15s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.12),0 1px 0 rgba(255,255,255,0.8) inset;}
   .cal-cell.other-month{background:rgba(253,250,246,0.15);opacity:0.35;box-shadow:none;}
   .cal-cell.is-today{border-color:var(--teal-light);box-shadow:0 0 0 2px rgba(91,191,163,0.4);}
-  .cal-cell.is-empty::after{content:'🌴';position:absolute;bottom:3px;right:4px;font-size:12px;opacity:0.06;pointer-events:none;}
-  .cell-date{font-size:11px;font-weight:400;color:var(--mid);margin-bottom:3px;line-height:1;}
-  .is-today .cell-date{color:white;background:var(--teal-mid);width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;}
+  .cal-cell.is-empty::after{content:'🌴';position:absolute;bottom:5px;right:5px;font-size:12px;opacity:0.06;pointer-events:none;}
+  .cell-date{font-size:11px;font-weight:400;color:var(--mid);margin-bottom:4px;line-height:1;padding:0 6px;}
+  .is-today .cell-date{color:white;background:var(--teal-mid);width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;margin-left:4px;padding:0;}
   .stay-bars{display:flex;flex-direction:column;gap:2px;margin-top:2px;}
-  .stay-bar{height:18px;display:flex;align-items:center;padding:0 5px;font-size:9px;font-weight:400;color:white;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity 0.15s;box-shadow:0 1px 4px rgba(0,0,0,0.2);border-radius:3px;}
-  .stay-bar.bar-start{border-radius:10px 3px 3px 10px;padding-left:7px;}
-  .stay-bar.bar-mid{border-radius:0;margin-left:-2px;margin-right:-2px;padding:0 2px;}
-  .stay-bar.bar-end{border-radius:3px 10px 10px 3px;margin-left:-2px;padding-right:7px;}
-  .stay-bar.bar-single{border-radius:10px;}
-  .stay-bar.bar-mid .bar-name,.stay-bar.bar-end .bar-name{display:none;}
+
+  /* Bar system — seamless across cells */
+  .stay-bar{
+    height:20px;
+    display:flex;
+    align-items:center;
+    font-size:10px;
+    font-weight:400;
+    color:white;
+    cursor:pointer;
+    white-space:nowrap;
+    overflow:hidden;
+    transition:opacity 0.15s;
+    position:relative;
+    letter-spacing:0.1px;
+  }
+  /* Start: rounded left cap, flush right edge into next cell */
+  .stay-bar.bar-start{
+    border-radius:20px 0 0 20px;
+    padding-left:9px;
+    margin-right:-3px;
+    padding-right:0;
+  }
+  /* Mid: flush both sides, extends edge-to-edge */
+  .stay-bar.bar-mid{
+    border-radius:0;
+    margin-left:-3px;
+    margin-right:-3px;
+    padding:0;
+  }
+  /* End: flush left edge, rounded right cap */
+  .stay-bar.bar-end{
+    border-radius:0 20px 20px 0;
+    margin-left:-3px;
+    padding-right:9px;
+    padding-left:0;
+  }
+  /* Single day: pill */
+  .stay-bar.bar-single{
+    border-radius:20px;
+    padding:0 9px;
+    margin:0 2px;
+  }
+  /* Name label — only visible on start or row-start */
+  .bar-name{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    padding-left:2px;
+  }
+  .stay-bar.bar-mid .bar-name{display:none;}
+  .stay-bar.bar-end .bar-name{display:none;}
+  /* Row-start override: mid bars at column 0 show name */
+  .stay-bar.bar-mid.row-start .bar-name{display:block;padding-left:6px;}
+  .stay-bar.bar-mid.row-start{border-radius:20px 0 0 20px;margin-left:0;padding-left:0;}
+  .stay-bar.bar-end.row-start .bar-name{display:block;padding-left:6px;}
+  .stay-bar.bar-end.row-start{border-radius:20px 20px 20px 20px;margin-left:0;}
 
   /* Sidebar */
   .cal-sidebar{background:var(--white);border-left:1px solid var(--sand-mid);overflow-y:auto;display:flex;flex-direction:column;}
@@ -319,8 +370,8 @@ const css = `
     .whos-body{padding:32px 40px 60px;}
     .photos-body{padding:36px 40px 60px;}
     .cal-main{padding:28px 28px;}
-    .cal-cell{min-height:100px;}
-    .stay-bar{height:20px;font-size:10px;}
+    .cal-cell{min-height:130px;}
+    .stay-bar{height:22px;font-size:10px;}
     .cell-date{font-size:12px;}
     .fav-cat-strip{padding:0 40px;}
     .fav-content{padding:28px 40px 0;}
@@ -797,15 +848,22 @@ function CalendarPage({stays,knownPeople,onSave,onDelete,showToast}){
             const isToday=cellDate===td;
             const segs=cellStays[i]||[];
             const isEmpty=cell.cur&&segs.length===0;
+            const col=i%7;
             return(
               <div key={i} className={`cal-cell ${!cell.cur?"other-month":""} ${isToday?"is-today":""} ${isEmpty?"is-empty":""}`}>
                 <div className="cell-date">{cell.day}</div>
                 <div className="stay-bars">
-                  {segs.slice(0,3).map(({stay,pos},si)=>(
-                    <div key={stay.id+si} className={`stay-bar bar-${pos}`} style={{background:stay.color||DEFAULT_COLOR}} onClick={()=>setDetailStay(stay)}>
-                      <span className="bar-name">{stay.isSurprise?"🤫":stay.name}</span>
-                    </div>
-                  ))}
+                  {segs.map(({stay,pos},si)=>{
+                    const isRowStart=col===0&&(pos==="mid"||pos==="end");
+                    return(
+                      <div key={stay.id+si}
+                        className={`stay-bar bar-${pos}${isRowStart?" row-start":""}`}
+                        style={{background:stay.color||DEFAULT_COLOR}}
+                        onClick={()=>setDetailStay(stay)}>
+                        <span className="bar-name">{stay.name}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             );
