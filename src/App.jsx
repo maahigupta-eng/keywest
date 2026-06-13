@@ -106,82 +106,65 @@ const css = `
 
   /* ── CALENDAR ── */
   .cal-page{display:grid;grid-template-columns:1fr 280px;flex:1;}
-  .cal-main{padding:16px;background:radial-gradient(ellipse at 20% 0%,rgba(141,207,202,0.35) 0%,transparent 50%),radial-gradient(ellipse at 80% 100%,rgba(232,137,74,0.12) 0%,transparent 50%),linear-gradient(160deg,#d4ede9 0%,#e8f7f5 30%,#f2ead8 70%,#ede4ce 100%);min-height:calc(100vh - 100px);position:relative;}
-  .cal-watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Cormorant Garamond',serif;font-size:clamp(60px,12vw,160px);font-weight:300;font-style:italic;color:rgba(26,107,90,0.06);white-space:nowrap;pointer-events:none;letter-spacing:-4px;user-select:none;z-index:0;}
-  .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;position:relative;z-index:1;flex-wrap:wrap;gap:8px;}
+  .cal-main{
+    padding:20px 16px 32px;
+    background:radial-gradient(ellipse at 20% 0%,rgba(141,207,202,0.35) 0%,transparent 50%),
+      radial-gradient(ellipse at 80% 100%,rgba(232,137,74,0.12) 0%,transparent 50%),
+      linear-gradient(160deg,#d4ede9 0%,#e8f7f5 30%,#f2ead8 70%,#ede4ce 100%);
+    min-height:calc(100vh - 100px);
+  }
+  .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
   .cal-nav{display:flex;align-items:center;gap:10px;}
-  .cal-month-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:var(--teal);}
+  .cal-month-title{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:400;color:var(--teal);}
   .btn-nav{width:28px;height:28px;border-radius:50%;border:1.5px solid rgba(26,107,90,0.2);background:rgba(255,255,255,0.6);color:var(--teal);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
   .btn-nav:hover{background:var(--teal);color:white;border-color:var(--teal);}
-  .btn-add-stay{padding:8px 18px;background:var(--sunset);color:white;border:none;border-radius:50px;font-size:10px;font-weight:400;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Jost',sans-serif;transition:all 0.2s;box-shadow:0 4px 16px rgba(232,137,74,0.3);}
+  .btn-add-stay{padding:8px 20px;background:var(--sunset);color:white;border:none;border-radius:50px;font-size:10px;font-weight:400;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Jost',sans-serif;transition:all 0.2s;box-shadow:0 4px 16px rgba(232,137,74,0.3);}
   .btn-add-stay:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(232,137,74,0.4);}
-  .cal-day-labels{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px;position:relative;z-index:1;}
-  .day-label{text-align:center;font-size:9px;font-weight:400;letter-spacing:1.5px;text-transform:uppercase;color:var(--light);padding:4px 0;}
-  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;position:relative;z-index:1;}
-  .cal-cell{min-height:120px;background:rgba(253,250,246,0.96);border-radius:8px;padding:6px 0 4px;display:flex;flex-direction:column;border:1px solid rgba(255,255,255,0.6);position:relative;overflow:visible;transition:border-color 0.15s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.12),0 1px 0 rgba(255,255,255,0.8) inset;}
-  .cal-cell.other-month{background:rgba(253,250,246,0.15);opacity:0.35;box-shadow:none;}
-  .cal-cell.is-today{border-color:var(--teal-light);box-shadow:0 0 0 2px rgba(91,191,163,0.4);}
-  .cal-cell.is-empty::after{content:'🌴';position:absolute;bottom:5px;right:5px;font-size:12px;opacity:0.06;pointer-events:none;}
-  .cell-date{font-size:11px;font-weight:400;color:var(--mid);margin-bottom:4px;line-height:1;padding:0 6px;}
-  .is-today .cell-date{color:white;background:var(--teal-mid);width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;margin-left:4px;padding:0;}
-  .stay-bars{display:flex;flex-direction:column;gap:2px;margin-top:2px;}
 
-  /* Bar system — seamless across cells */
-  .stay-bar{
-    height:20px;
-    display:flex;
-    align-items:center;
-    font-size:10px;
-    font-weight:400;
-    color:white;
-    cursor:pointer;
-    white-space:nowrap;
-    overflow:hidden;
-    transition:opacity 0.15s;
+  /* Day-of-week header */
+  .cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px;}
+  .cal-dow{text-align:center;font-size:9px;font-weight:400;letter-spacing:2px;text-transform:uppercase;color:var(--light);padding:3px 0;}
+
+  /* Week strip */
+  .cal-week{margin-bottom:4px;background:rgba(253,250,246,0.88);border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.7);box-shadow:0 2px 12px rgba(0,0,0,0.08);}
+  .cal-week-dates{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid rgba(232,220,200,0.5);}
+  .cal-date-cell{padding:7px 10px 6px;position:relative;}
+  .cal-date-cell.other-month{opacity:0.3;}
+  .cal-date-cell.is-today .cal-date-num{
+    background:var(--teal-mid);color:white;
+    width:22px;height:22px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;
+  }
+  .cal-date-num{font-size:12px;font-weight:400;color:var(--mid);line-height:1;display:inline-block;}
+  .cal-date-cell:not(:last-child){border-right:1px solid rgba(232,220,200,0.35);}
+
+  /* Bar zone — the key innovation */
+  .cal-bar-zone{position:relative;padding:6px 0 8px;}
+  .cal-week-bar{
     position:relative;
-    letter-spacing:0.1px;
+    height:22px;
+    margin:0 0 3px;
+    display:flex;align-items:center;
   }
-  /* Start: rounded left cap, flush right edge into next cell */
-  .stay-bar.bar-start{
-    border-radius:20px 0 0 20px;
-    padding-left:9px;
-    margin-right:-3px;
-    padding-right:0;
-  }
-  /* Mid: flush both sides, extends edge-to-edge */
-  .stay-bar.bar-mid{
-    border-radius:0;
-    margin-left:-3px;
-    margin-right:-3px;
-    padding:0;
-  }
-  /* End: flush left edge, rounded right cap */
-  .stay-bar.bar-end{
-    border-radius:0 20px 20px 0;
-    margin-left:-3px;
-    padding-right:9px;
-    padding-left:0;
-  }
-  /* Single day: pill */
-  .stay-bar.bar-single{
-    border-radius:20px;
-    padding:0 9px;
-    margin:0 2px;
-  }
-  /* Name label — only visible on start or row-start */
-  .bar-name{
+  /* The actual colored segment — positioned by inline style left+width % */
+  .cal-bar-seg{
+    position:absolute;
+    top:0;height:22px;
+    display:flex;align-items:center;
+    color:white;
+    font-size:10px;font-weight:400;
+    cursor:pointer;
+    transition:opacity 0.15s;
     overflow:hidden;
-    text-overflow:ellipsis;
     white-space:nowrap;
-    padding-left:2px;
   }
-  .stay-bar.bar-mid .bar-name{display:none;}
-  .stay-bar.bar-end .bar-name{display:none;}
-  /* Row-start override: mid bars at column 0 show name */
-  .stay-bar.bar-mid.row-start .bar-name{display:block;padding-left:6px;}
-  .stay-bar.bar-mid.row-start{border-radius:20px 0 0 20px;margin-left:0;padding-left:0;}
-  .stay-bar.bar-end.row-start .bar-name{display:block;padding-left:6px;}
-  .stay-bar.bar-end.row-start{border-radius:20px 20px 20px 20px;margin-left:0;}
+  .cal-bar-seg:hover{opacity:0.82;}
+  .cal-bar-seg.seg-left{border-radius:20px 0 0 20px;padding-left:10px;}
+  .cal-bar-seg.seg-right{border-radius:0 20px 20px 0;padding-right:8px;}
+  .cal-bar-seg.seg-both{border-radius:20px;padding:0 10px;}
+  .cal-bar-seg.seg-mid{border-radius:0;}
+  .cal-bar-seg .seg-name{overflow:hidden;text-overflow:ellipsis;}
 
   /* Sidebar */
   .cal-sidebar{background:var(--white);border-left:1px solid var(--sand-mid);overflow-y:auto;display:flex;flex-direction:column;}
@@ -369,9 +352,7 @@ const css = `
     .page-body{padding:36px 40px 60px;}
     .whos-body{padding:32px 40px 60px;}
     .photos-body{padding:36px 40px 60px;}
-    .cal-main{padding:28px 28px;}
-    .cal-cell{min-height:130px;}
-    .stay-bar{height:22px;font-size:10px;}
+    .cal-main{padding:28px 28px 40px;}
     .cell-date{font-size:12px;}
     .fav-cat-strip{padding:0 40px;}
     .fav-content{padding:28px 40px 0;}
@@ -799,40 +780,60 @@ function CalendarPage({stays,knownPeople,onSave,onDelete,showToast}){
   const [editStay,setEditStay]=useState(null);
   const [detailStay,setDetailStay]=useState(null);
   const td=today();
+  const prev=()=>{if(month===0){setMonth(11);setYear(y=>y-1);}else setMonth(m=>m-1);};
+  const next=()=>{if(month===11){setMonth(0);setYear(y=>y+1);}else setMonth(m=>m+1);};
+
+  // Build week rows
   const firstDay=new Date(year,month,1).getDay();
   const dim=daysInMonth(year,month);
   const prevDim=daysInMonth(year,month===0?11:month-1);
-  const cells=[];
-  for(let i=firstDay-1;i>=0;i--)cells.push({day:prevDim-i,cur:false});
-  for(let i=1;i<=dim;i++)cells.push({day:i,cur:true});
-  while(cells.length%7!==0)cells.push({day:cells.length-dim-firstDay+1,cur:false});
-  const cellStays={};
-  stays.forEach(stay=>{
-    cells.forEach((cell,idx)=>{
-      if(!cell.cur)return;
-      const cellDate=ds(year,month,cell.day);
-      if(cellDate<stay.start||cellDate>stay.end)return;
-      const isStart=cellDate===stay.start,isEnd=cellDate===stay.end;
-      const col=idx%7;
-      let pos="mid";
-      if(isStart&&isEnd)pos="single";
-      else if(isStart)pos="start";
-      else if(isEnd)pos="end";
-      if(pos==="mid"&&col===0)pos="start";
-      if(pos==="mid"&&col===6)pos="end";
-      if(pos==="start"&&col===6)pos="single";
-      if(!cellStays[idx])cellStays[idx]=[];
-      cellStays[idx].push({stay,pos});
+  // All cells including overflow days
+  const allCells=[];
+  for(let i=firstDay-1;i>=0;i--)allCells.push({day:prevDim-i,cur:false});
+  for(let i=1;i<=dim;i++)allCells.push({day:i,cur:true});
+  while(allCells.length%7!==0)allCells.push({day:allCells.length-dim-firstDay+1,cur:false});
+  // Group into weeks
+  const weeks=[];
+  for(let w=0;w<allCells.length;w+=7)weeks.push(allCells.slice(w,w+7));
+
+  // For each week, compute which stays appear and their segment geometry
+  const getWeekBars=(weekCells)=>{
+    // Map stay → which slot index (so same stay always same row across weeks)
+    const staySlots={};
+    let nextSlot=0;
+    const bars=[];
+    stays.forEach(stay=>{
+      // Find which days of this week the stay covers
+      let startCol=-1,endCol=-1;
+      weekCells.forEach((cell,col)=>{
+        if(!cell.cur)return;
+        const d=ds(year,month,cell.day);
+        if(d>=stay.start&&d<=stay.end){
+          if(startCol===-1)startCol=col;
+          endCol=col;
+        }
+      });
+      if(startCol===-1)return; // not in this week
+      if(staySlots[stay.id]===undefined){staySlots[stay.id]=nextSlot;nextSlot++;}
+      const slot=staySlots[stay.id];
+      // Is the stay start/end within this week or beyond?
+      const weekStartDate=weekCells.find(c=>c.cur)&&ds(year,month,weekCells.find(c=>c.cur).day);
+      const firstCurCol=weekCells.findIndex(c=>c.cur);
+      const actualStartCol=weekCells.findIndex((c,ci)=>{if(!c.cur)return false;return ds(year,month,c.day)===stay.start;});
+      const actualEndCol=weekCells.findIndex((c,ci)=>{if(!c.cur)return false;return ds(year,month,c.day)===stay.end;});
+      const hasLeft=actualStartCol===startCol; // true pill left cap
+      const hasRight=actualEndCol===endCol&&actualEndCol!==-1; // true pill right cap
+      bars.push({stay,slot,startCol,endCol,hasLeft,hasRight});
     });
-  });
-  const prev=()=>{if(month===0){setMonth(11);setYear(y=>y-1);}else setMonth(m=>m-1);};
-  const next=()=>{if(month===11){setMonth(0);setYear(y=>y+1);}else setMonth(m=>m+1);};
+    return bars;
+  };
+
   const atHouse=stays.filter(s=>s.start<=td&&s.end>=td);
   const upcoming=stays.filter(s=>s.start>td).sort((a,b)=>a.start.localeCompare(b.start)).slice(0,8);
+
   return(
     <div className="cal-page">
       <div className="cal-main">
-        <div className="cal-watermark">{MONTH_NAMES[month]}</div>
         <div className="cal-header">
           <div className="cal-nav">
             <button className="btn-nav" onClick={prev}>‹</button>
@@ -841,35 +842,63 @@ function CalendarPage({stays,knownPeople,onSave,onDelete,showToast}){
           </div>
           <button className="btn-add-stay" onClick={()=>setAddModal(true)}>+ Add Stay</button>
         </div>
-        <div className="cal-day-labels">{DAY_NAMES.map(d=><div key={d} className="day-label">{d}</div>)}</div>
-        <div className="cal-grid">
-          {cells.map((cell,i)=>{
-            const cellDate=cell.cur?ds(year,month,cell.day):null;
-            const isToday=cellDate===td;
-            const segs=cellStays[i]||[];
-            const isEmpty=cell.cur&&segs.length===0;
-            const col=i%7;
-            return(
-              <div key={i} className={`cal-cell ${!cell.cur?"other-month":""} ${isToday?"is-today":""} ${isEmpty?"is-empty":""}`}>
-                <div className="cell-date">{cell.day}</div>
-                <div className="stay-bars">
-                  {segs.map(({stay,pos},si)=>{
-                    const isRowStart=col===0&&(pos==="mid"||pos==="end");
-                    return(
-                      <div key={stay.id+si}
-                        className={`stay-bar bar-${pos}${isRowStart?" row-start":""}`}
-                        style={{background:stay.color||DEFAULT_COLOR}}
-                        onClick={()=>setDetailStay(stay)}>
-                        <span className="bar-name">{stay.name}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
+
+        {/* Day of week header */}
+        <div className="cal-dow-row">
+          {DAY_NAMES.map(d=><div key={d} className="cal-dow">{d}</div>)}
         </div>
+
+        {/* Week strips */}
+        {weeks.map((weekCells,wi)=>{
+          const bars=getWeekBars(weekCells);
+          // How many slot rows needed
+          const maxSlot=bars.length>0?Math.max(...bars.map(b=>b.slot)):0;
+          const barZoneHeight=bars.length>0?(maxSlot+1)*25+10:16;
+          return(
+            <div key={wi} className="cal-week">
+              {/* Date numbers row */}
+              <div className="cal-week-dates">
+                {weekCells.map((cell,ci)=>{
+                  const cellDate=cell.cur?ds(year,month,cell.day):null;
+                  const isToday=cellDate===td;
+                  return(
+                    <div key={ci} className={`cal-date-cell${!cell.cur?" other-month":""}${isToday?" is-today":""}`}>
+                      <span className="cal-date-num">{cell.day}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Bar zone — bars positioned by % across the week */}
+              <div className="cal-bar-zone" style={{height:barZoneHeight}}>
+                {bars.map(({stay,slot,startCol,endCol,hasLeft,hasRight})=>{
+                  const leftPct=(startCol/7)*100;
+                  const widthPct=((endCol-startCol+1)/7)*100;
+                  const topPx=6+slot*25;
+                  let segClass="seg-mid";
+                  if(hasLeft&&hasRight)segClass="seg-both";
+                  else if(hasLeft)segClass="seg-left";
+                  else if(hasRight)segClass="seg-right";
+                  return(
+                    <div key={stay.id+wi}
+                      className={`cal-bar-seg ${segClass}`}
+                      style={{
+                        left:`calc(${leftPct}% + ${hasLeft?2:0}px)`,
+                        width:`calc(${widthPct}% - ${(hasLeft?2:0)+(hasRight?2:0)}px)`,
+                        top:topPx,
+                        background:stay.color||DEFAULT_COLOR,
+                      }}
+                      onClick={()=>setDetailStay(stay)}>
+                      <span className="seg-name">{stay.name}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </div>
+
       <div className="cal-sidebar">
         <SidebarPhoto/>
         <div className="sb-content">
@@ -880,7 +909,7 @@ function CalendarPage({stays,knownPeople,onSave,onDelete,showToast}){
               <div key={s.id} className="home-card">
                 <div className="home-dot" style={{background:s.color||DEFAULT_COLOR}}/>
                 <div>
-                  <div className="home-name">{s.isSurprise?"🤫 Surprise":s.name}</div>
+                  <div className="home-name">{s.name}</div>
                   <div className="home-dates">{fmt(s.start)} — {fmt(s.end)}</div>
                   {s.note&&<div style={{fontSize:11,color:"var(--mid)",fontStyle:"italic",fontWeight:300,marginTop:2}}>{s.note}</div>}
                   <div className="home-here">Here now</div>
@@ -894,7 +923,7 @@ function CalendarPage({stays,knownPeople,onSave,onDelete,showToast}){
               <div key={s.id} className="coming-item">
                 <div className="coming-dot" style={{background:s.color||DEFAULT_COLOR}}/>
                 <div>
-                  <div className="coming-name">{s.isSurprise?"🤫 Surprise":s.name}</div>
+                  <div className="coming-name">{s.name}</div>
                   <div className="coming-dates">{fmt(s.start)} — {fmt(s.end)}</div>
                   {s.flightNum&&<div className="coming-note">✈️ {s.flightNum}</div>}
                   {s.note&&<div className="coming-note">{s.note}</div>}
@@ -904,6 +933,7 @@ function CalendarPage({stays,knownPeople,onSave,onDelete,showToast}){
           </div>
         </div>
       </div>
+
       {addModal&&<StayModal knownPeople={knownPeople} onClose={()=>setAddModal(false)} onSave={async s=>{await onSave(s);showToast("Stay added!");}} onDelete={onDelete}/>}
       {editStay&&<StayModal stay={editStay} knownPeople={knownPeople} onClose={()=>setEditStay(null)} onSave={async s=>{await onSave(s);showToast("Updated!");}} onDelete={async id=>{await onDelete(id);showToast("Removed.");}}/>}
       {detailStay&&<DetailModal stay={detailStay} onClose={()=>setDetailStay(null)} onEdit={s=>{setDetailStay(null);setEditStay(s);}} onDelete={async id=>{await onDelete(id);setDetailStay(null);showToast("Removed.");}}/>}
